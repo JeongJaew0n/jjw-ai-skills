@@ -24,5 +24,3 @@ skills/
 별도 스크립트 없음. Claude에게 맡긴다.
 
 > 이 repo의 스킬을 `~/.claude/skills/`에 설치해줘
-
-새 PC에서도 위 한마디면 Claude가 환경을 확인하며 심볼릭 링크를 걸어준다.
