@@ -6,9 +6,9 @@ description: |
   AI (and the user) can resume work across sessions. Generates three files:
   spec.md (구현 스펙), context.md (왜 이 작업이 시작됐는지의 맥락), checklist.md
   (작업 진행 중 체크해 나갈 단계 목록).
-  Use when the user types "/ai-plan-memory", says "플랜 메모리", "작업 계획 정리해줘",
-  "이 작업 docs/plans 에 정리해", or otherwise asks to durably record what we just
-  agreed to do.
+  Use only when the user explicitly invokes "/ai-plan-memory", "$ai-plan-memory",
+  or "ai-plan-memory". Do not activate it automatically merely because the user asks
+  to plan, document, or persist work.
 allowed-tools:
   - Bash
   - Read
@@ -20,6 +20,10 @@ allowed-tools:
 ---
 
 # /ai-plan-memory — 작업 계획을 docs/plans/ 에 영속화
+
+## 활성화 조건
+
+사용자가 `/ai-plan-memory`, `$ai-plan-memory` 또는 `ai-plan-memory`를 직접 언급해 호출한 경우에만 이 스킬을 실행한다. 계획 작성, 문서화, 작업 기록 요청과 내용이 유사하다는 이유만으로 자동 선택하지 않는다.
 
 ## 무엇을 하는 스킬인가
 
@@ -217,4 +221,3 @@ docs/plans/chat-panel-ai-bridge/
 
 다음 세션에서 이 폴더만 읽으면 작업 재개 가능합니다.
 ```
-

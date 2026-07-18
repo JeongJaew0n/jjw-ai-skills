@@ -18,7 +18,7 @@ skills/
 | Skill | Description |
 |-------|-------------|
 | [ai-plan-memory](skills/ai-plan-memory/) | 작업 계획을 `docs/plans/<slug>/`에 영속 기록(spec·context·checklist)해 세션 간 재개 가능하게 함 |
-| [ai-decision-interview](skills/ai-decision-interview/) | 요구사항을 바로 구현으로 넘기기 전에, 숨은 기술 결정(트랜잭션 경계·멱등성·실패 처리·호환성 등)을 코드베이스 근거로 드러내 사람과 확정 |
+| [ai-interview-tech](skills/ai-interview-tech/) | 요구사항을 바로 구현으로 넘기기 전에, 숨은 기술 결정(트랜잭션 경계·멱등성·실패 처리·호환성 등)을 코드베이스 근거로 드러내 사람과 확정 |
 
 ## 설치
 
