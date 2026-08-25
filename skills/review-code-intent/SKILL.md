@@ -1,6 +1,6 @@
 ---
 name: review-code-intent
-description: PR 리뷰를 Intent Review(사람의 이해·기억용)와 Tech Review(구현 안전성 검증용) 두 축으로 분리해 docs/reviews/[PR번호] [PR이름]/ 에 산출한다. 트리거 — "PR 리뷰 문서로", "intent review", "tech review", "이 PR 정리해줘", "리뷰 두 개로 나눠서".
+description: PR 리뷰를 Intent Review(사람의 이해·기억용)와 Tech Review(구현 안전성 검증용) 두 축으로 분리해 docs/reviews/[PR번호] [PR이름]/ 에 산출한다. 사용자가 `/review-code-intent`, `$review-code-intent` 또는 `review-code-intent`를 명시적으로 호출했을 때만 사용한다. PR 리뷰·코드 리뷰 요청이 관련 분야에 해당한다는 이유만으로 자동 사용하지 않는다.
 user_invocable: true
 argument-hint: "[pr-number]"
 ---
