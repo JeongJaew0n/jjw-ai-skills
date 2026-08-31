@@ -1,17 +1,28 @@
 #!/bin/sh
 # claude-hud 런처
 #
+# 요구사항: POSIX sh, Node 14 이상 (hud.mjs 가 ?. 와 ?? 를 쓴다).
+# 지원 플랫폼: macOS, Linux, WSL. native Windows 는 /bin/sh 가 없어 동작하지 않는다.
+#
 # 왜 런처가 필요한가
 #   settings.json 의 statusLine.command 는 셸을 거쳐 실행된다. 그 셸이 물려받는
 #   NODE_OPTIONS 가 깨져 있으면 (예: --require 대상 파일이 tmp 청소로 사라진 경우)
 #   node 는 hud.mjs 를 읽기도 전에 MODULE_NOT_FOUND 로 죽고, 상태줄은 빈 줄이 된다.
 #   hud.mjs 는 내장 모듈만 쓰므로 NODE_OPTIONS 가 줄 이득이 없다. 그래서 지운다.
 #
-# stdout 은 상태줄로 그대로 렌더된다. 실패해도 stdout 을 더럽히지 않는다
-# (hud.mjs 가 예외를 삼키고, node 자체가 없으면 stdout 이 비어 상태줄만 사라진다).
+# stdout 은 상태줄로 그대로 렌더된다. 실패해도 stdout 을 더럽히지 않는다.
 # stderr 는 막지 않는다 — 진단 가능성을 남긴다.
 
 set -eu
 
 dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
+
+# node 가 없는 환경(Claude Code 는 단일 바이너리라 node 를 보장하지 않는다)에서는
+# 조용히 물러난다. 상태줄 항목만 사라지고 에러는 표면화되지 않는다.
+# stdin 을 비우고 나가는 이유: 읽지 않고 종료하면 페이로드를 쓰던 쪽이 EPIPE 를 본다.
+if ! command -v node >/dev/null 2>&1; then
+  cat >/dev/null 2>&1 || :
+  exit 0
+fi
+
 exec env -u NODE_OPTIONS node "$dir/hud.mjs"

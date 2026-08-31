@@ -20,6 +20,24 @@ Opus 5 | ctx:43% | 5h:18%(3h) wk:63%(2d19h) | $8.25 | 3h32m | +231/-47
 
 여기에 실패 정책이 하나 더 붙는다. **어떤 필드가 없어도 그 항목만 빠지고 나머지는 그린다. 예외가 나면 아무것도 출력하지 않는다.** 깨진 상태줄보다 없는 상태줄이 낫다.
 
+## 요구사항
+
+| 항목 | 요구 | 확인 |
+| --- | --- | --- |
+| Node | **14 이상** | `bin/hud.mjs` 가 optional chaining(`?.`)과 nullish(`??`)를 쓴다 |
+| 셸 | POSIX `sh` | 런처가 `#!/bin/sh` + `env -u` |
+| 플랫폼 | **macOS / Linux / WSL** | native Windows 는 `/bin/sh` 가 없어 동작하지 않는다 |
+
+**`node` 는 별도로 설치돼 있어야 한다.** Claude Code 는 단일 실행 바이너리라서, Claude Code 가 돌아간다는 사실이 `node` 의 존재를 보장하지 않는다.
+
+`node` 가 없으면 런처는 **조용히 물러난다** — 상태줄 항목만 사라지고 에러는 표면화되지 않는다. 확인하려면:
+
+```sh
+command -v node || echo "node 없음 — HUD 는 아무것도 그리지 않는다"
+```
+
+`plugin.json` 에는 이 제약을 적을 표준 필드가 없다 (`engines` / `platforms` / `os` 는 Claude Code 가 인식하지 않아 `claude plugin validate --strict` 에서 경고가 된다). 그래서 여기와 런처 헤더에 적어 둔다.
+
 ## 설치
 
 이 저장소가 `~/.claude/skills/` 에 설치되면 `hud` 는 `hud@skills-dir` 로 자동 로드된다. 별도 설치 명령이 없다.
@@ -111,6 +129,12 @@ jq -c . docs/payload-example.json | ./bin/hud | cat -v
 
 ```sh
 jq -c . docs/payload-example.json | NODE_OPTIONS="--require=/nonexistent.cjs" ./bin/hud
+```
+
+`node` 가 없는 환경에서는 stdout·stderr 모두 비고 종료 코드가 0이어야 한다.
+
+```sh
+jq -c . docs/payload-example.json | env PATH=/usr/bin:/bin ./bin/hud; echo "rc=$?"
 ```
 
 ## 아직 안 된 것
