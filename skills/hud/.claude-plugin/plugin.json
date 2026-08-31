@@ -1,0 +1,10 @@
+{
+  "name": "hud",
+  "description": "Claude Code 상태줄 HUD — 의존성 0, 외부 프로세스 spawn 0, MCP 0. 레포/브랜치, 모델, 컨텍스트 사용률, rate limit, 세션 비용을 한 줄에 그린다.",
+  "version": "0.1.0",
+  "author": {
+    "name": "정재원",
+    "email": "popt0@innogrid.com"
+  },
+  "keywords": ["statusline", "hud", "zero-dependency"]
+}
