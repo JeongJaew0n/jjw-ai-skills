@@ -2,13 +2,13 @@
 name: ai-plan-memory
 version: 1.2.0
 description: |
-  Create a persistent plan record under <project-root>/docs/plans/<slug>/ so the
-  AI (and the user) can resume work across sessions. Generates three files:
-  spec.md (구현 스펙), context.md (왜 이 작업이 시작됐는지의 맥락), checklist.md
-  (작업 진행 중 체크해 나갈 단계 목록).
-  Use only when the user explicitly invokes "/ai-plan-memory", "$ai-plan-memory",
-  or "ai-plan-memory". Do not activate it automatically merely because the user asks
-  to plan, document, or persist work.
+  작업 계획을 프로젝트 루트의 <project-root>/docs/plans/<slug>/ 에 영속 기록해 세션 간
+  재개를 가능하게 한다. 세 파일을 만든다 — spec.md (구현 스펙), context.md (왜 이 작업이
+  시작됐는지의 맥락), checklist.md (작업 진행 중 체크해 나갈 단계 목록).
+  사용자가 `/ai-plan-memory` 또는 `$ai-plan-memory` 를 명시적으로 호출했을 때만 사용한다.
+  계획·문서화·작업 기록 요청이 관련 분야에 해당한다는 이유만으로 자동 사용하지 않는다.
+user-invocable: true
+disable-model-invocation: true
 allowed-tools:
   - Bash
   - Read
@@ -23,7 +23,7 @@ allowed-tools:
 
 ## 활성화 조건
 
-사용자가 `/ai-plan-memory`, `$ai-plan-memory` 또는 `ai-plan-memory`를 직접 언급해 호출한 경우에만 이 스킬을 실행한다. 계획 작성, 문서화, 작업 기록 요청과 내용이 유사하다는 이유만으로 자동 선택하지 않는다.
+사용자가 `/ai-plan-memory` 또는 `$ai-plan-memory` 로 호출한 경우에만 이 스킬을 실행한다. 이름만 언급한 경우는 호출로 보지 않는다 — `disable-model-invocation` 이 그 경로를 차단하므로, 실행하지 말고 슬래시 호출을 안내한다. 계획 작성, 문서화, 작업 기록 요청과 내용이 유사하다는 이유만으로 자동 선택하지 않는다.
 
 ## 무엇을 하는 스킬인가
 
@@ -171,7 +171,8 @@ ls docs/plans/<slug>/ 2>/dev/null
 - [ ] (UI 가 있다면) 브라우저에서 직접 확인
 
 ## 3. 마무리
-- [ ] 커밋 (CLAUDE.md commit_protocol 따름)
+- [ ] (사용자가 커밋을 지시한 경우에만) 커밋 — 저장소의 `.claude/commands/commit.md` 와
+      `CLAUDE.md` 의 Git 절을 먼저 읽고 그 규약을 따름
 - [ ] checklist 의 미체크 항목이 남았으면 사유 메모
 - [ ] 다음 세션이 픽업할 수 있도록 spec.md / context.md 의 변경분 반영
 ```

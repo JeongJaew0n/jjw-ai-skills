@@ -1,7 +1,8 @@
 ---
 name: review-code-intent
-description: PR 리뷰를 Intent Review(사람의 이해·기억용), Tech Review(구현 안전성 검증용), Intent Implementation Review(의도 달성도 측정용) 세 축으로 분리해 docs/reviews/[PR번호] [PR이름]/ 에 산출한다. 사용자가 `/review-code-intent`, `$review-code-intent` 또는 `review-code-intent` 를 명시적으로 호출했을 때만 사용한다. PR 리뷰·코드 리뷰 요청이 관련 분야에 해당한다는 이유만으로 자동 사용하지 않는다.
-user_invocable: true
+description: PR 리뷰를 Intent Review(사람의 이해·기억용), Tech Review(구현 안전성 검증용), Intent Implementation Review(의도 달성도 측정용) 세 축으로 분리해 docs/reviews/[PR번호] [PR이름]/ 에 산출한다. 사용자가 `/review-code-intent` 또는 `$review-code-intent` 를 명시적으로 호출했을 때만 사용한다. PR 리뷰·코드 리뷰 요청이 관련 분야에 해당한다는 이유만으로 자동 사용하지 않는다.
+user-invocable: true
+disable-model-invocation: true
 argument-hint: "[pr-number]"
 ---
 

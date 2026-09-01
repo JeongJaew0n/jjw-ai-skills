@@ -1,13 +1,15 @@
 ---
 name: ai-interview-tech
-description: 비즈니스 요구사항을 바로 구현으로 넘기기 전에, 그 뒤에 숨어 있는 기술 결정을 코드베이스를 근거로 드러내고 사람과 함께 확정하기 위한 스킬. 사용자가 `/ai-interview-tech`, `$ai-interview-tech` 또는 `ai-interview-tech`를 명시적으로 호출했을 때만 사용한다. 기능 추가·변경·설계 요청이 관련 분야에 해당한다는 이유만으로 자동 사용하지 않는다.
+description: 비즈니스 요구사항을 바로 구현으로 넘기기 전에, 그 뒤에 숨어 있는 기술 결정을 코드베이스를 근거로 드러내고 사람과 함께 확정하기 위한 스킬. 사용자가 `/ai-interview-tech` 또는 `$ai-interview-tech` 를 명시적으로 호출했을 때만 사용한다. 기능 추가·변경·설계 요청이 관련 분야에 해당한다는 이유만으로 자동 사용하지 않는다.
+user-invocable: true
+disable-model-invocation: true
 ---
 
 # AI Interview Tech
 
 ## 활성화 조건
 
-사용자가 `/ai-interview-tech`, `$ai-interview-tech` 또는 `ai-interview-tech`를 직접 언급해 호출한 경우에만 이 스킬을 실행한다. 일반적인 구현·설계 요청이나 기술 결정이 필요한 상황만으로 이 스킬을 자동 선택하지 않는다.
+사용자가 `/ai-interview-tech` 또는 `$ai-interview-tech` 로 호출한 경우에만 이 스킬을 실행한다. 이름만 언급한 경우는 호출로 보지 않는다 — `disable-model-invocation` 이 그 경로를 차단하므로, 실행하지 말고 슬래시 호출을 안내한다. 일반적인 구현·설계 요청이나 기술 결정이 필요한 상황만으로 이 스킬을 자동 선택하지 않는다.
 
 ## 이 스킬이 푸는 문제
 
@@ -152,7 +154,9 @@ B 처럼 commit 이후 발행하는 방식이 더 적합합니다.
    - 리뷰 검증 체크리스트 → `checklist.md`
    - 호출 시 위에서 정리한 결정 스펙을 그대로 넘겨 채워지게 한다.
 
-2. **`ai-plan-memory` 스킬이 없으면, 결정 스펙을 md 파일로 직접 저장한다.** `docs/plans/<slug>/decision-spec.md` 에 4단계에서 정리한 결정 스펙 블록(요구사항 / 확정된 결정 / 생략한 축 / 리뷰 검증 체크리스트)을 그대로 쓴다. `<slug>` 는 기능 이름을 영문 kebab-case 로 정한다.
+2. **`ai-plan-memory` 스킬이 없으면, 결정 스펙을 md 파일로 직접 저장한다.** `docs/decisions/<slug>.md` 에 4단계에서 정리한 결정 스펙 블록(요구사항 / 확정된 결정 / 생략한 축 / 리뷰 검증 체크리스트)을 그대로 쓴다. `<slug>` 는 기능 이름을 영문 kebab-case 로 정한다.
+
+   **`docs/plans/` 안에 쓰지 않는다.** 그 폴더는 `ai-plan-memory` 가 `spec.md` / `context.md` / `checklist.md` 세 파일로 관리한다. 같은 폴더에 `decision-spec.md` 를 놓으면 나중에 `ai-plan-memory` 를 돌렸을 때 `spec.md` 와 내용이 겹쳐, 다음 세션이 어느 쪽을 정본으로 읽어야 할지 알 수 없게 된다.
 
 어느 경로든, 저장한 파일 경로를 사용자에게 짧게 알려 다음 세션이 픽업할 수 있게 한다.
 

@@ -1,7 +1,8 @@
 ---
 name: setup
-description: claude-hud 상태줄을 설치하거나 갱신한다. settings.json 의 statusLine 이 HUD 런처를 가리키게 병합하고, 필요하면 안정 경로로 사본을 만든다. 사용자가 `/hud:setup`, `$hud:setup` 또는 `hud:setup` 을 명시적으로 호출했을 때만 사용한다. 상태줄·HUD·설정 관련 요청이 관련 분야에 해당한다는 이유만으로 자동 사용하지 않는다.
-user_invocable: true
+description: claude-hud 상태줄을 설치하거나 갱신한다. settings.json 의 statusLine 이 HUD 런처를 가리키게 병합하고, 필요하면 안정 경로로 사본을 만든다. 사용자가 `/hud:setup` 또는 `$hud:setup` 을 명시적으로 호출했을 때만 사용한다. 상태줄·HUD·설정 관련 요청이 관련 분야에 해당한다는 이유만으로 자동 사용하지 않는다.
+user-invocable: true
+disable-model-invocation: true
 argument-hint: "[제거]"
 ---
 
@@ -30,7 +31,7 @@ argument-hint: "[제거]"
 
 ## 타협 불가 가드레일
 
-- **`/hud:setup` 명시적 호출에만 반응한다.**
+- **`/hud:setup` 또는 `$hud:setup` 호출에만 반응한다.** 이름만 언급한 경우는 호출이 아니다.
 - settings.json 을 고치기 전에 **반드시 읽고 백업한다.** 백업 경로를 사용자에게 알린다.
 - **다른 키를 덮어쓰지 않는다.** `statusLine` 만 병합한다. `hooks`, `permissions` 등은 그대로 둔다.
 - 이미 **다른** `statusLine.command` 가 있으면 조용히 바꾸지 않는다. 기존 값을 보여주고 확인을 받는다. 우리가 설치한 값이면 확인 없이 갱신한다.
