@@ -1,6 +1,5 @@
 ---
 name: ai-plan-memory
-version: 1.2.0
 description: |
   작업 계획을 프로젝트 루트의 <project-root>/docs/plans/<slug>/ 에 영속 기록해 세션 간
   재개를 가능하게 한다. 세 파일을 만든다 — spec.md (구현 스펙), context.md (왜 이 작업이
@@ -46,10 +45,12 @@ allowed-tools:
 ### 1. 프로젝트 루트 확인
 
 ```bash
-git rev-parse --show-toplevel 2>/dev/null || pwd
+ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
 ```
 
 `docs/plans/` 경로는 항상 이 루트 기준이다. 서브 디렉터리에서 호출돼도 루트로 정규화한다.
+
+**이후 모든 단계에서 `$ROOT` 를 쓴다.** 상대경로를 쓰면 서브 디렉터리에서 호출했을 때 충돌을 놓치고, 아래 `동작 원칙` 의 "조용히 덮어쓰지 않는다" 가 무력화된다.
 
 ### 2. slug 결정
 
@@ -68,7 +69,7 @@ slug 후보를 정할 때:
 ### 3. 충돌 확인
 
 ```bash
-ls docs/plans/<slug>/ 2>/dev/null
+ls "$ROOT/docs/plans/<slug>/" 2>/dev/null
 ```
 
 - 폴더가 없으면 → 새로 만들고 3개 파일 생성
@@ -176,6 +177,18 @@ ls docs/plans/<slug>/ 2>/dev/null
 - [ ] checklist 의 미체크 항목이 남았으면 사유 메모
 - [ ] 다음 세션이 픽업할 수 있도록 spec.md / context.md 의 변경분 반영
 ```
+
+## 다른 스킬이 이 템플릿에 의존한다
+
+`ai-interview-tech` 가 인터뷰 산출물을 이 세 파일에 위임한다 (그 스킬의 `결정 스펙을 영속화한다` 절).
+
+| 인터뷰 산출물 | 위임 대상 |
+|---|---|
+| 확정된 결정 표 + 근거 | `spec.md` / `context.md` |
+| 논의에서 생략한 축 | `context.md` |
+| 리뷰 검증 체크리스트 | `checklist.md` |
+
+**세 파일의 헤더 구조를 바꿀 때 그쪽 매핑도 함께 고친다.** 한쪽만 고치면 위임이 조용히 어긋난다.
 
 ## 동작 원칙
 

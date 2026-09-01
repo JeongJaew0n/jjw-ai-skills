@@ -42,6 +42,19 @@ command -v node || echo "node 없음 — HUD 는 아무것도 그리지 않는�
 
 이 저장소가 `~/.claude/skills/` 에 설치되면 `hud` 는 `hud@skills-dir` 로 자동 로드된다. 별도 설치 명령이 없다.
 
+**심볼릭 링크도 동작한다** (2026-09-01 확인).
+
+```
+$ ls -la ~/.claude/skills/hud
+hud -> /path/to/jjw-ai-skills/skills/hud
+
+$ claude plugin list
+Skills-directory plugins (.claude/skills/*):
+  ❯ hud@skills-dir   Version: 0.2.0   Status: ✔ loaded
+```
+
+링크로 설치하면 `git pull` 이 곧바로 반영된다. 자동 로드는 **다음 세션부터** 걸린다.
+
 상태줄을 켜려면 **한 번** 실행한다.
 
 ```
@@ -139,7 +152,7 @@ jq -c . docs/payload-example.json | env PATH=/usr/bin:/bin ./bin/hud; echo "rc=$
 
 ## 아직 안 된 것
 
-- **`@skills-dir` 자동 로드 미검증** — `claude plugin init --help` 가 명시하는 동작이지만, 이 플러그인으로 실제 확인하려면 세션 재시작이 필요하다. 특히 `skills/setup/SKILL.md` 가 플러그인 스킬(`hud:setup`)로만 잡히는지, 저장소의 다른 스킬처럼 최상위 스킬로도 중복 노출되는지 확인해야 한다
+- **사본 모드 미검증** — `skills/setup/SKILL.md` 의 사본 모드는 마켓플레이스 설치를 전제하는데 그 경로가 아직 없어 한 번도 실행된 적이 없다
 - **마켓플레이스 배포** — `.claude-plugin/marketplace.json` 이 없다. 지금 배포 경로는 이 저장소뿐이다
 - **LICENSE** — 미정
 - **설정 외부화** — 임계값이 `bin/hud.mjs` 소스에 있다. `~/.claude/hud/config.json` 으로 뺄지 미정

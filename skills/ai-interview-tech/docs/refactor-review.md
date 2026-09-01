@@ -90,6 +90,9 @@ skills/ai-plan-memory/SKILL.md
 
 ## [중간] I-3. `review-code-intent` 와 같은 것을 다른 형식으로 만든다
 
+> **해소** — 2026-09-01. 양쪽에 연결을 넣었다.
+> 이 스킬에 `### 리뷰로 넘길 때` 절, `review-code-intent` 의 `의도 항목 확정` 에 `### 인터뷰 산출물이 있으면 먼저 찾는다` 절.
+
 **위치** — `SKILL.md:127-132` 대 `../../review-code-intent/SKILL.md` 의 `# 3. Intent Implementation Review`
 
 이 스킬은 인터뷰 끝에 **리뷰 검증 체크리스트**를 만든다.
@@ -118,6 +121,8 @@ skills/ai-plan-memory/SKILL.md
 ---
 
 ## [중간] I-4. 자체 점검 절이 없다
+
+> **해소** — 2026-09-01. `## 완료 전 자체 점검` 7개 항목을 추가했다 (제안보다 1개 늘려 "코드를 보여주지 않고 추상적으로만 물은 축" 점검 포함).
 
 **위치** — 문서 말미
 

@@ -49,6 +49,9 @@ disable-model-invocation: true
 
 ## [중간] H-2. "사본 모드"는 아직 존재하지 않는 배포 경로를 위한 분기다
 
+> **해소** — 2026-09-01. 지우지 않고 미검증임을 `setup/SKILL.md` 에 인용 블록으로 표시했다.
+> `README.md` 의 `아직 안 된 것` 에도 항목으로 올렸다.
+
 **위치** — `skills/setup/SKILL.md` 의 `## 두 가지 설치 모드`, `## Phase 1 — 실행 경로 확정`
 
 setup 은 설치 경로에 버전 해시가 있는지로 두 모드를 가른다.
@@ -81,6 +84,8 @@ setup 은 설치 경로에 버전 해시가 있는지로 두 모드를 가른다
 
 ## [중간] H-3. 같은 설명이 두 파일에 산다
 
+> **해소** — 2026-09-01. `setup/SKILL.md` 쪽을 축약하고 정본을 `README.md` 로 지정했다. 컴포넌트 목록 사실은 한 곳에만 남는다.
+
 **위치** — `README.md:53` 과 `skills/setup/SKILL.md` 의 `## 왜 setup 이 필요한가`
 
 거의 동일한 문단이 두 곳에 있다.
@@ -107,6 +112,13 @@ Claude Code 가 컴포넌트 목록에 무언가를 추가하면(예: 언젠가 
 ---
 
 ## [중간] H-4. `@skills-dir` 자동 로드가 심볼릭 링크에서 검증되지 않았다
+
+> **해소 — 사실로 확정** — 2026-09-01. **심볼릭 링크로도 플러그인이 로드된다.**
+> `실행 확인` — `claude plugin list` 출력:
+> `hud@skills-dir  Version: 0.2.0  Path: ~/.claude/skills/hud  Status: ✔ loaded`
+> `claude plugin details hud` 의 `Component inventory` 에 `Skills (1) setup` 도 잡힌다.
+> 부속 질문(최상위 스킬로 중복 노출되는지)도 확인됐다 — 플러그인 컴포넌트로만 잡히고 중복 노출되지 않는다.
+> `README.md` 에 근거와 함께 기록했고, `아직 안 된 것` 에서 이 항목을 내렸다.
 
 **위치** — `README.md:25` (`## 설치`)
 

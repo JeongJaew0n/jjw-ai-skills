@@ -56,6 +56,8 @@ disable-model-invocation: true
 
 ## [중간] R-2. 존재하지 않는 스킬 두 개를 가리킨다
 
+> **해소** — 2026-09-01. 확인되지 않은 두 스킬을 표에서 제거하고 산문으로 성격을 바꿨다. R-3 도 함께 해소.
+
 **위치** — `SKILL.md:387-391` (`# 관련 skill` 표)
 
 ```markdown
@@ -88,6 +90,8 @@ disable-model-invocation: true
 
 ## [중간] R-3. `ai-pr-line-comment` 는 이 저장소 밖 의존이다
 
+> **해소** — 2026-09-01. 표에 `위치` 열을 추가해 **이 저장소 밖**임을 명시하고, 다른 머신에서 없을 수 있다는 경고를 붙였다.
+
 **위치** — `SKILL.md:389`
 
 표가 `ai-pr-line-comment` 를 조건 없이 가리키지만, 그 스킬은 `~/.claude/skills/` 에만 있고 이 저장소에는 없다. 즉 **이 저장소를 클론한 다른 머신에서는 존재하지 않는다.**
@@ -101,6 +105,8 @@ disable-model-invocation: true
 ---
 
 ## [중간] R-4. `ai-interview-tech` 의 결정 스펙을 의도 항목 출처로 쓰지 못한다
+
+> **해소** — 2026-09-01. `## 의도 항목 확정` 에 `### 인터뷰 산출물이 있으면 먼저 찾는다` 를 추가했다. `관련 skill` 표에도 `ai-interview-tech` 를 넣었다.
 
 **위치** — `# 3. Intent Implementation Review` 의 `## 의도 항목 확정`
 
