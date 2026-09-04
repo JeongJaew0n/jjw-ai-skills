@@ -28,6 +28,9 @@ const CONFIG = {
   costCrit: 50,
 };
 
+/** 리셋 시각에 붙일 요일 라벨 (Date#getDay 순서) */
+const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
+
 // ── 색상 ──────────────────────────────────────────────────
 // NO_COLOR 규약을 따르고, 파이프로 넘어갈 때도 색을 유지한다
 // (statusline 은 TTY 가 아니지만 Claude Code 가 ANSI 를 해석해 준다)
@@ -65,11 +68,32 @@ function humanDuration(ms) {
   return remHr ? `${day}d${remHr}h` : `${day}d`;
 }
 
-/** epoch(초) → 지금부터 남은 시간 "3h32m". 이미 지났으면 null */
+/** epoch(초) → 리셋까지 남은 시간 "3h32m". 이미 지났으면 null */
 function untilReset(epochSec) {
   if (!Number.isFinite(epochSec)) return null;
   const ms = epochSec * 1000 - Date.now();
   return ms > 0 ? humanDuration(ms) : null;
+}
+
+/** epoch(초) → 리셋 시각 "18:32" (오늘) / "9/9(화) 01:00" (다른 날). 이미 지났으면 null */
+function resetClock(epochSec) {
+  if (!Number.isFinite(epochSec)) return null;
+  const at = new Date(epochSec * 1000);
+  if (Number.isNaN(at.getTime()) || at.getTime() <= Date.now()) return null;
+
+  const hh = String(at.getHours()).padStart(2, "0");
+  const mm = String(at.getMinutes()).padStart(2, "0");
+
+  const now = new Date();
+  const sameDay =
+    at.getFullYear() === now.getFullYear() &&
+    at.getMonth() === now.getMonth() &&
+    at.getDate() === now.getDate();
+
+  if (sameDay) return `${hh}:${mm}`;
+
+  const dow = WEEKDAYS[at.getDay()];
+  return `${at.getMonth() + 1}/${at.getDate()}(${dow}) ${hh}:${mm}`;
 }
 
 /**
@@ -173,11 +197,16 @@ function render(d) {
   // rate limit (5시간 / 7일)
   const rl = d?.rate_limits;
   const rateParts = [];
-  for (const [key, label] of [["five_hour", "5h"], ["seven_day", "wk"]]) {
+  // 5h 는 짧아서 남은 시간이 직관적이고, wk 는 며칠 뒤라 절대 시각이 직관적이다
+  const windows = [
+    ["five_hour", "5h", untilReset],
+    ["seven_day", "wk", resetClock],
+  ];
+  for (const [key, label, formatReset] of windows) {
     const w = rl?.[key];
     if (!w || !Number.isFinite(w.used_percentage)) continue;
     const pct = byThreshold(w.used_percentage, CONFIG.rateWarn, CONFIG.rateCrit)(formatPercent(w.used_percentage));
-    const left = untilReset(w.resets_at);
+    const left = formatReset(w.resets_at);
     rateParts.push(dim(`${label}:`) + pct + (left ? dim(`(${left})`) : ""));
   }
   if (rateParts.length) main.push(rateParts.join(" "));
