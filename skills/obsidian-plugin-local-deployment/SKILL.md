@@ -1,11 +1,11 @@
 ---
-name: obsidian-plugin-local-deployement
+name: obsidian-plugin-local-deployment
 description: |
   직접 만든 Obsidian 커스텀 플러그인을 이 컴퓨터에 설치된 Obsidian vault 의
   플러그인 폴더로 배포한다. 첫 실행 때 vault 경로를 자동 탐지하거나 사용자에게
   받아 config.json 에 저장해 두고, 이후에는 저장된 경로로 바로 배포한다.
-  사용자가 `/obsidian-plugin-local-deployement` 또는
-  `$obsidian-plugin-local-deployement` 를 명시적으로 호출했을 때만 사용한다.
+  사용자가 `/obsidian-plugin-local-deployment` 또는
+  `$obsidian-plugin-local-deployment` 를 명시적으로 호출했을 때만 사용한다.
   Obsidian·플러그인·배포 요청이 관련 분야에 해당한다는 이유만으로 자동 사용하지 않는다.
 user-invocable: true
 disable-model-invocation: true
@@ -19,11 +19,11 @@ allowed-tools:
   - AskUserQuestion
 ---
 
-# /obsidian-plugin-local-deployement — 로컬 Obsidian 에 커스텀 플러그인 배포
+# /obsidian-plugin-local-deployment — 로컬 Obsidian 에 커스텀 플러그인 배포
 
 ## 활성화 조건
 
-사용자가 `/obsidian-plugin-local-deployement` 또는 `$obsidian-plugin-local-deployement` 로 호출한 경우에만 이 스킬을 실행한다. 이름만 언급한 경우는 호출로 보지 않는다 — `disable-model-invocation` 이 그 경로를 차단하므로, 실행하지 말고 슬래시 호출을 안내한다. Obsidian 이나 플러그인 배포와 내용이 유사하다는 이유만으로 자동 선택하지 않는다.
+사용자가 `/obsidian-plugin-local-deployment` 또는 `$obsidian-plugin-local-deployment` 로 호출한 경우에만 이 스킬을 실행한다. 이름만 언급한 경우는 호출로 보지 않는다 — `disable-model-invocation` 이 그 경로를 차단하므로, 실행하지 말고 슬래시 호출을 안내한다. Obsidian 이나 플러그인 배포와 내용이 유사하다는 이유만으로 자동 선택하지 않는다.
 
 ## 무엇을 하는 스킬인가
 
@@ -49,7 +49,7 @@ Obsidian 플러그인은 **레지스트리도 설치 명령도 없다.** `main.j
 
 **`config.json` 은 이 컴퓨터 전용이다.** 저장소에는 커밋하지 않는다 (`.gitignore` 처리됨). 스킬을 재설치해 파일이 사라지면 아래 "1. 설정" 이 다시 돌면서 재생성된다.
 
-`SKILL_DIR` 은 이 `SKILL.md` 가 있는 디렉터리다. 전역 설치본이라면 보통 `~/.claude/skills/obsidian-plugin-local-deployement`. 아래 명령의 `$SKILL_DIR` 은 실제 경로로 치환해서 쓴다.
+`SKILL_DIR` 은 이 `SKILL.md` 가 있는 디렉터리다. 전역 설치본이라면 보통 `~/.claude/skills/obsidian-plugin-local-deployment`. 아래 명령의 `$SKILL_DIR` 은 실제 경로로 치환해서 쓴다.
 
 ## 실행 절차
 
