@@ -398,8 +398,8 @@ git grep -l "{패턴}" origin/{base} -- {소스경로} | wc -l   # base 에도 �
 | 상황 | skill | 위치 |
 |---|---|---|
 | 구현 전 결정 확정 (이 리뷰의 의도 항목 출처가 된다) | `ai-interview-tech` | 이 저장소 |
-| 리뷰 결과를 PR 인라인 코멘트로 등록 | `ai-pr-line-comment` | **이 저장소 밖** — `~/.claude/skills/` |
+| 리뷰 결과를 PR 인라인 코멘트로 등록 | `comment-inline-review` (PENDING 초안 → 지시 시 제출) | **이 저장소 밖** — `~/.claude/skills/` |
 
-`ai-pr-line-comment` 는 이 저장소에 없다. 다른 머신에서는 존재하지 않을 수 있으므로 먼저 확인한다.
+`comment-inline-review` 는 이 저장소에 없다. 다른 머신에서는 존재하지 않을 수 있으므로 **쓰기 전에 실재를 확인한다.** 이 표가 사라진 스킬을 가리킨 적이 있다 — 2026-09-01 에는 `ai-pr-line-comment` 를 가리켰고, 그 스킬이 그 뒤 사라져 표가 거짓이 됐다.
 
 작업 중인 레포에 리뷰 응대·컨벤션 점검 스킬이 있으면 함께 쓴다. 이 저장소는 그런 스킬을 제공하지 않는다.
