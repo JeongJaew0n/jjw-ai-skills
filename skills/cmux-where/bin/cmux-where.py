@@ -20,10 +20,26 @@ import sys
 # pixel_frame 값은 460.5 처럼 소수가 나온다. 같은 행·열로 묶을 때 쓰는 허용 오차(px).
 AXIS_TOLERANCE = 4.0
 
+# cmux 밖에서 호출됐을 때의 종료 코드. 오류(1)와 구분해서, 호출한 쪽이
+# "실패" 가 아니라 "해당 없음" 으로 처리할 수 있게 한다.
+EXIT_NOT_IN_CMUX = 3
+
 
 def die(msg, code=1):
     print(msg, file=sys.stderr)
     sys.exit(code)
+
+
+def require_cmux():
+    """cmux 터미널 안인지 확인한다.
+
+    이 스킬은 자동 호출될 수 있으므로 이 경로가 실제로 밟힌다. cmux 밖이라면
+    답할 수 있는 것이 없다 — 추측하지 않고 물러난다.
+    """
+    if not os.environ.get("CMUX_SURFACE_ID"):
+        die("cmux 터미널 안에서 실행된 것이 아닙니다 (CMUX_SURFACE_ID 없음).\n"
+            "이 스킬은 cmux 창 안의 위치를 다루므로 여기서는 알려줄 것이 없습니다.",
+            EXIT_NOT_IN_CMUX)
 
 
 def rpc(method, params=None):
@@ -264,6 +280,7 @@ def main():
         if a not in ("--all", "--json"):
             die(f"알 수 없는 인자: {a}\n사용법: cmux-where.py [--all] [--json]")
 
+    require_cmux()
     data = build(show_all)
     if as_json:
         print(json.dumps(data, ensure_ascii=False, indent=2))
