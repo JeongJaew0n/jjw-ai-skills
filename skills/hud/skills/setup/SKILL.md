@@ -165,6 +165,14 @@ jq -c . "$ROOT/docs/payload-example.json" | sh -c "$CMD" | cat -v
 jq -c . "$ROOT/docs/payload-example.json" | env NODE_OPTIONS="--require=/nonexistent.cjs" sh -c "$CMD" | cat -v
 ```
 
+리셋 표기까지 확인하려면 `resets_at` 을 미래로 갱신해 넣는다. 픽스처의 값은 절대 epoch 라서 시간이 지나면 과거가 되고, 그러면 양쪽 버전이 똑같이 괄호를 생략해 **버전 차이를 못 본다.**
+
+```bash
+jq -c --argjson now "$(date +%s)" \
+  '.rate_limits.five_hour.resets_at=($now+13800) | .rate_limits.seven_day.resets_at=($now+241200)' \
+  "$ROOT/docs/payload-example.json" | sh -c "$CMD" | cat -v
+```
+
 출력이 비어 있으면 설치 실패다. 완료라고 쓰지 말고 원인을 찾는다.
 
 | 증상 | 확인할 것 |

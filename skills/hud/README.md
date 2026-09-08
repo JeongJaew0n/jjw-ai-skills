@@ -152,6 +152,16 @@ jq -c . docs/payload-example.json | NODE_OPTIONS="--require=/nonexistent.cjs" ./
 jq -c . docs/payload-example.json | env PATH=/usr/bin:/bin ./bin/hud; echo "rc=$?"
 ```
 
+리셋 표기(`5h:` `wk:` 뒤의 괄호)까지 확인하려면 `resets_at` 을 미래로 갱신해 넣는다.
+
+```sh
+jq -c --argjson now "$(date +%s)" \
+  '.rate_limits.five_hour.resets_at=($now+13800) | .rate_limits.seven_day.resets_at=($now+241200)' \
+  docs/payload-example.json | ./bin/hud | cat -v
+```
+
+**픽스처의 `resets_at` 은 일부러 절대 epoch 로 남긴다.** Claude Code 가 실제로 보내는 형태가 그것이므로, 계약 문서로서는 절대값이 정확하다. 대신 시간이 지나면 그 값이 과거가 되어 리셋 표기 분기를 지나지 않으므로, **렌더 회귀를 볼 때는 위 갱신 원라이너를 쓴다.** 픽스처를 동적 생성으로 바꾸지 않는 이유는 정적 파일이 실행물이 되어 "의존성 0" 원칙과 어긋나기 때문이다.
+
 ## 아직 안 된 것
 
 - **사본 모드 미검증** — `skills/setup/SKILL.md` 의 사본 모드는 마켓플레이스 설치를 전제하는데 그 경로가 아직 없어 한 번도 실행된 적이 없다
