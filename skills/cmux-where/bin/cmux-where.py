@@ -261,9 +261,12 @@ def render(data):
             out.append(f'  {mark}{t["position"]:<6} {t["surface_ref"]:<11} {t["pane_ref"]:<9} {claude:<15}{tab}  {t["title"][:38]}')
         if others:
             out.append("  전송 예시:")
+            # --workspace 기본값은 $CMUX_WORKSPACE_ID(=내 workspace)다. 남의 workspace 의
+            # surface 에 보낼 때 생략하면 그 ref 를 내 workspace 안에서 찾다가 실패한다.
+            ws = "" if w["is_mine"] else f' --workspace {w["ref"]}'
             for t in others[:4]:
-                out.append(f'    {t["position"]} → cmux send --surface {t["surface_ref"]} "<text>" '
-                           f'&& cmux send-key --surface {t["surface_ref"]} enter')
+                out.append(f'    {t["position"]} → cmux send{ws} --surface {t["surface_ref"]} "<text>" '
+                           f'&& cmux send-key{ws} --surface {t["surface_ref"]} enter')
     return "\n".join(out)
 
 

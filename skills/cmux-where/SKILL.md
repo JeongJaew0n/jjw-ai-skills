@@ -94,9 +94,9 @@ window     창 하나 (window:1)
 
 마지막 항목이 **Claude 세션과 터미널을 잇는 고리**다. 어떤 surface 가 어떤 Claude 대화인지 이걸로 안다.
 
-## 반드시 알아야 할 함정 세 개
+## 반드시 알아야 할 함정 네 개
 
-이 스킬이 존재하는 이유의 절반은 아래 세 개다. 전부 **에러 없이 조용히 틀린 답을 주는** 종류다.
+이 스킬이 존재하는 이유의 절반은 아래 함정들이다. 앞의 세 개는 **에러 없이 조용히 틀린 답을 주는** 종류이고, 네 번째는 에러로 드러나지만 원인을 오해하기 쉬운 종류다.
 
 ### 1. `cmux tree` 의 나열 순서는 화면 순서가 아니다
 
@@ -139,6 +139,21 @@ cmux rpc pane.list "{\"workspace_id\":\"$CMUX_WORKSPACE_ID\"}"
 
 에러가 아니라 그럴듯한 다른 답이 오기 때문에 검증 없이 쓰면 남의 workspace 를 자기 것으로 착각한다. **CLI 서브커맨드(`cmux list-panes` 등)는 `$CMUX_WORKSPACE_ID` 를 기본값으로 잘 쓰지만, `cmux rpc` 는 그렇지 않다.**
 
+### 4. `--workspace` 를 생략하면 남의 workspace 의 surface 를 못 찾는다
+
+`cmux send` / `send-key` / `read-screen` 의 `--workspace` **기본값은 `$CMUX_WORKSPACE_ID`, 즉 내 workspace** 다.
+
+```
+$ cmux send --help
+  --workspace <id|ref|index>   Target workspace (default: $CMUX_WORKSPACE_ID)
+```
+
+그래서 다른 workspace 의 surface ref 를 `--surface` 로만 넘기면, cmux 는 그 ref 를 **내 workspace 안에서** 찾다가 실패한다 (`Surface is not a terminal` 류). `--all` 로 얻은 대상은 대체로 다른 workspace 이므로 이 함정에 그대로 걸린다.
+
+앞의 함정 세 개와 달리 이건 **에러로 드러난다.** 조용히 틀리지는 않지만, 원인이 `--surface` 값이 아니라 생략한 `--workspace` 라서 엉뚱한 곳을 고치기 쉽다.
+
+스크립트는 대상이 내 workspace 가 아닐 때 전송 예시에 `--workspace <ref>` 를 자동으로 붙여 출력한다. **출력된 명령을 그대로 쓰면 이 함정을 안 만난다.**
+
 ## caller 와 focused 는 다르다
 
 `cmux identify` 는 두 블록을 준다.
@@ -154,16 +169,31 @@ cmux rpc pane.list "{\"workspace_id\":\"$CMUX_WORKSPACE_ID\"}"
 
 ## 위치로 지목해 명령 보내기
 
-스크립트가 각 터미널의 전송 명령을 그대로 출력한다. 텍스트 전송과 Enter 는 별개다.
+스크립트가 각 터미널의 전송 명령을 **그대로 복사해 쓸 수 있는 형태로** 출력한다. 텍스트 전송과 Enter 는 별개다.
 
 ```bash
+# 내 workspace 안의 터미널
 cmux send --surface surface:8 "<text>" && cmux send-key --surface surface:8 enter
+
+# 다른 workspace 의 터미널 — --workspace 를 반드시 붙인다 (아래 함정 4)
+cmux send --workspace workspace:2 --surface surface:5 "<text>" \
+  && cmux send-key --workspace workspace:2 --surface surface:5 enter
+
 cmux read-screen --surface surface:8 --lines 40   # 결과 확인
 ```
 
 사용자가 "좌측 세션에 ~ 물어봐" 처럼 **위치로** 지목하면 스크립트 출력에서 그 위치의 `surface_ref` 를 찾아 쓴다. 위치 표현을 추측해서 `surface:1` 같은 걸 찍지 않는다.
 
-`/cmux-send` 커맨드가 전송 절차를 따로 다룬다. 위치 파악은 이 스킬, 전송은 그쪽이다.
+### 보낸 텍스트가 어떻게 처리되나
+
+대상 surface 가 무엇을 돌리고 있느냐에 따라 다르다. 스크립트 출력의 `claude=` 표시로 구분한다.
+
+| 대상 | 결과 |
+|---|---|
+| Claude Code 가 돌고 있는 surface (`claude=` 있음) | 그 Claude 에게 **프롬프트로 입력**된다 |
+| 일반 셸 surface (`claude=` 없음) | **셸 명령으로 실행**된다 |
+
+같은 문장이 한쪽에서는 질문이고 다른 쪽에서는 명령이다. 보내기 전에 어느 쪽인지 확인한다.
 
 ## 동작 원칙
 
