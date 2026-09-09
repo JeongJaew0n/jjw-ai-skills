@@ -1,3 +1,5 @@
 .DS_Store
 .omc/
 skills/obsidian-plugin-local-deployment/config.json
+__pycache__/
+*.pyc
