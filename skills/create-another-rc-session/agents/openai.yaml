@@ -1,0 +1,7 @@
+# bin/install.sh 가 SKILL.md frontmatter 에서 생성한다. 직접 고치지 말 것.
+interface:
+  display_name: "create-another-rc-session"
+  default_prompt: "Use $create-another-rc-session."
+
+policy:
+  allow_implicit_invocation: false

@@ -29,6 +29,21 @@ skills/
 
 ## 설치
 
-별도 스크립트 없음. Claude에게 맡긴다.
+```bash
+./bin/install.sh              # Claude Code + Codex 양쪽에 설치
+./bin/install.sh --check      # 현재 상태만 점검
+./bin/install.sh --dry-run    # 무엇을 할지만 출력
+```
 
-> 이 repo의 스킬을 `~/.claude/skills/`에 설치해줘
+복사가 아니라 **심볼릭 링크**를 건다. 복사본은 이 저장소를 고쳐도 반영되지 않아
+어느 쪽이 최신인지 알 수 없게 되는데, 실제로 그 상태가 한 번 만들어졌었다.
+
+| 대상 | 정책이 걸리는 자리 |
+|---|---|
+| `~/.claude/skills/` | `SKILL.md` frontmatter 의 `disable-model-invocation` |
+| `~/.codex/skills/` | `agents/openai.yaml` 의 `allow_implicit_invocation` |
+
+Codex 는 frontmatter 를 읽지 않으므로 `agents/openai.yaml` 이 따로 필요하다.
+이 파일은 `install.sh` 가 frontmatter 에서 **생성**하므로 직접 고치지 않는다.
+
+저장소에 없는 전역 스킬은 건드리지 않고 목록만 보여준다.
