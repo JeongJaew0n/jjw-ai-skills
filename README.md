@@ -25,6 +25,7 @@ skills/
 | [cmux-where](skills/cmux-where/) | cmux 세션이 자기 위치(workspace·pane·surface 와 좌/우/상/하)와 형제 터미널 지도를 파악. `pane.list` 의 `pixel_frame` 으로 판정해 `cmux tree` 의 index 순서 오독을 막는다. **이 저장소에서 유일하게 자동 호출을 허용** ([근거](AGENTS.md)) |
 | [my-app-init](skills/my-app-init/) | 새 프로젝트 초기 세팅 — git 신원·커밋 정책·브랜치 정책을 묻고 `git config --local` 과 `CLAUDE.md` 에 고정, `docs/plans`·`docs/troubleshootings`(project-specific·reusable) 골격 생성, README·CLAUDE.md 작성 |
 | [create-another-rc-session](skills/create-another-rc-session/) | Remote Control 에서 `/cd` 가 막혔을 때 대상 디렉터리에 RC 서버를 띄워 세션을 새로 만든다. 워크스페이스 신뢰 게이트 우회는 사용자 확인 필수이며 자동 로드 설정이 있는 디렉터리는 하드 거부 |
+| [diagnose](skills/diagnose/) | 근본 원인을 찾고 나서 고치는 체계적 디버깅(Iron Law·5단계·3-strike 룰). gstack `investigate` 에서 프레임워크 결합을 걷어내 포팅했고, 기록 위치는 레포를 훑어 사용자에게 묻고 `CLAUDE.md` 에 고정한다 |
 
 ## 설치
 
