@@ -23,6 +23,8 @@ skills/
 | [hud](skills/hud/) | Claude Code 상태줄 HUD 플러그인 — 의존성 0·spawn 0·MCP 0. `/hud:setup` 으로 `statusLine` 을 설치한다 |
 | [obsidian-plugin-local-deployment](skills/obsidian-plugin-local-deployment/) | 직접 만든 Obsidian 커스텀 플러그인을 로컬 vault 의 `.obsidian/plugins/` 로 배포. vault 경로를 최초 1회 탐지해 저장하고, 이후 빌드 → 복사 → 리로드 안내까지 처리 |
 | [cmux-where](skills/cmux-where/) | cmux 세션이 자기 위치(workspace·pane·surface 와 좌/우/상/하)와 형제 터미널 지도를 파악. `pane.list` 의 `pixel_frame` 으로 판정해 `cmux tree` 의 index 순서 오독을 막는다. **이 저장소에서 유일하게 자동 호출을 허용** ([근거](AGENTS.md)) |
+| [my-app-init](skills/my-app-init/) | 새 프로젝트 초기 세팅 — git 신원·커밋 정책·브랜치 정책을 묻고 `git config --local` 과 `CLAUDE.md` 에 고정, `docs/plans`·`docs/troubleshootings`(project-specific·reusable) 골격 생성, README·CLAUDE.md 작성 |
+| [create-another-rc-session](skills/create-another-rc-session/) | Remote Control 에서 `/cd` 가 막혔을 때 대상 디렉터리에 RC 서버를 띄워 세션을 새로 만든다. 워크스페이스 신뢰 게이트 우회는 사용자 확인 필수이며 자동 로드 설정이 있는 디렉터리는 하드 거부 |
 
 ## 설치
 
