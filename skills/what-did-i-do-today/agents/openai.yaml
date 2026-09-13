@@ -1,0 +1,7 @@
+# bin/install.sh 가 SKILL.md frontmatter 에서 생성한다. 직접 고치지 말 것.
+interface:
+  display_name: "what-did-i-do-today"
+  default_prompt: "Use $what-did-i-do-today."
+
+policy:
+  allow_implicit_invocation: false
