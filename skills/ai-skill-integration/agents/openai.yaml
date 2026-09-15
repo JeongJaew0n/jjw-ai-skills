@@ -1,0 +1,7 @@
+# bin/install.sh 가 SKILL.md frontmatter 에서 생성한다. 직접 고치지 말 것.
+interface:
+  display_name: "ai-skill-integration"
+  default_prompt: "Use $ai-skill-integration."
+
+policy:
+  allow_implicit_invocation: false
