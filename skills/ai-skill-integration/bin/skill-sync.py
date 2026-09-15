@@ -61,6 +61,24 @@ def newest_mtime(d):
     return best
 
 
+# mtime 만으로는 최신을 못 가린다. 복사·체크아웃이 시각을 바꾸고, 래퍼 껍데기가
+# 본체보다 나중 시각을 가질 수 있다(실제로 meeting-minutes 가 그랬다 — 24줄 래퍼가
+# 400줄 본체보다 나중이었다). 그래서 내용 규모를 보조 신호로 함께 본다.
+SHRINK = 0.6   # 최신 쪽이 반대쪽의 이 비율 미만이면 의심
+
+
+def size_of(d):
+    """(파일 수, 총 바이트)."""
+    fs = files_of(d)
+    total = 0
+    for _, p in fs:
+        try:
+            total += os.path.getsize(p)
+        except OSError:
+            pass
+    return len(fs), total
+
+
 def link_target(p):
     return os.path.realpath(p) if os.path.islink(p) else None
 
@@ -84,7 +102,9 @@ def classify(name):
     ea, eb = os.path.isdir(a), os.path.isdir(b)
     r = {"name": name, "in_claude": ea, "in_codex": eb,
          "excluded": None, "state": None, "newer": None,
-         "claude_mtime": None, "codex_mtime": None}
+         "claude_mtime": None, "codex_mtime": None,
+         "claude_bytes": None, "codex_bytes": None,
+         "claude_files": None, "codex_files": None, "suspect": None}
 
     # 저장소가 관리하는 스킬은 bin/install.sh 의 일이다. 여기서 건드리지 않는다.
     if os.path.isdir(os.path.join(REPO, name)):
@@ -112,6 +132,16 @@ def classify(name):
             ma, mb = newest_mtime(a), newest_mtime(b)
             r["claude_mtime"], r["codex_mtime"] = ma, mb
             r["newer"] = "claude" if ma > mb else ("codex" if mb > ma else "동시")
+
+            (r["claude_files"], r["claude_bytes"]) = size_of(a)
+            (r["codex_files"], r["codex_bytes"]) = size_of(b)
+            if r["newer"] in ("claude", "codex"):
+                nb = r["claude_bytes"] if r["newer"] == "claude" else r["codex_bytes"]
+                ob = r["codex_bytes"] if r["newer"] == "claude" else r["claude_bytes"]
+                if ob and nb < ob * SHRINK:
+                    pct = round(nb * 100 / ob)
+                    r["suspect"] = (f"mtime 은 {r['newer']} 가 최신인데 내용이 "
+                                    f"반대쪽의 {pct}% 뿐이다")
     elif ea:
         r["state"] = "claude 에만"
         r["newer"] = "claude"
@@ -150,8 +180,9 @@ def cmd_analyze(args):
         print("== 동기화가 필요한 스킬 ==")
         print(f"  {'스킬':<32} {'상태':<16} {'최신':<7} {'claude':<17} {'codex'}")
         for r in act:
+            mark = " !" if r["suspect"] else ""
             print(f"  {r['name']:<32} {r['state']:<16} {str(r['newer'] or '-'):<7} "
-                  f"{ts(r['claude_mtime']):<17} {ts(r['codex_mtime'])}")
+                  f"{ts(r['claude_mtime']):<17} {ts(r['codex_mtime'])}{mark}")
     else:
         print("== 동기화가 필요한 스킬 없음 ==")
 
@@ -160,6 +191,17 @@ def cmd_analyze(args):
     print(f"\n  claude 가 최신: {c}개    codex 가 최신: {x}개    이미 같음: {len(same)}개")
     if c and x:
         print("  ** 양쪽에 최신이 섞여 있다. 한 방향으로 밀면 반대쪽 최신본을 덮어쓴다. **")
+
+    sus = [r for r in act if r["suspect"]]
+    if sus:
+        print(f"\n== ! 최신 판정이 의심스러운 {len(sus)}개 ==")
+        print("   mtime 은 최신인데 내용이 훨씬 작다. 래퍼 껍데기이거나 잘린 사본일 수 있다.")
+        for r in sus:
+            print(f"   {r['name']}")
+            print(f"     {r['suspect']}")
+            print(f"     claude {r['claude_files']}파일/{r['claude_bytes']}B"
+                  f"   codex {r['codex_files']}파일/{r['codex_bytes']}B")
+        print("   ** 이 항목은 방향을 정하기 전에 내용을 직접 열어 확인한다. **")
 
     if excl:
         print(f"\n== 제외 {len(excl)}개 (건드리지 않음) ==")
@@ -202,6 +244,10 @@ def cmd_apply(args):
             print(f"  건너뜀 {name} — 원본 쪽에 없음 (이 방향으로는 채울 수 없다)")
             skipped += 1
             continue
+        # 의심 항목을 '작은 쪽' 방향으로 미는 경우에만 경고한다.
+        if r["suspect"] and args.direction.startswith(r["newer"] or "\0"):
+            print(f"  ! 주의 {name} — {r['suspect']}")
+            print(f"    이 방향은 더 작은 쪽을 원본으로 삼는다. 의도한 것인지 확인하라.")
         if os.path.exists(dst):
             os.makedirs(backup, exist_ok=True)
             shutil.copytree(dst, os.path.join(backup, name), symlinks=True,
