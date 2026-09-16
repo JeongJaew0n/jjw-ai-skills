@@ -1,0 +1,7 @@
+# bin/install.sh 가 SKILL.md frontmatter 에서 생성한다. 직접 고치지 말 것.
+interface:
+  display_name: "vscode-vsix-local-deployment"
+  default_prompt: "Use $vscode-vsix-local-deployment."
+
+policy:
+  allow_implicit_invocation: false

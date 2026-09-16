@@ -22,6 +22,7 @@ skills/
 | [review-code-intent](skills/review-code-intent/) | PR 리뷰를 Intent Review(사람의 이해·기억용), Tech Review(구현 안전성 검증용), Intent Implementation Review(의도 달성도 측정용) 세 축으로 분리해 `docs/reviews/[PR번호] [PR이름]/`에 산출 |
 | [hud](skills/hud/) | Claude Code 상태줄 HUD 플러그인 — 의존성 0·spawn 0·MCP 0. `/hud:setup` 으로 `statusLine` 을 설치한다 |
 | [obsidian-plugin-local-deployment](skills/obsidian-plugin-local-deployment/) | 직접 만든 Obsidian 커스텀 플러그인을 로컬 vault 의 `.obsidian/plugins/` 로 배포. vault 경로를 최초 1회 탐지해 저장하고, 이후 빌드 → 복사 → 리로드 안내까지 처리 |
+| [vscode-vsix-local-deployment](skills/vscode-vsix-local-deployment/) | 로컬 VS Code 확장 저장소나 VSIX를 `code --install-extension`으로 설치하고 manifest 호환성과 실제 설치 ID·버전을 검증 |
 | [cmux-where](skills/cmux-where/) | cmux 세션이 자기 위치(workspace·pane·surface 와 좌/우/상/하)와 형제 터미널 지도를 파악. `pane.list` 의 `pixel_frame` 으로 판정해 `cmux tree` 의 index 순서 오독을 막는다. **이 저장소에서 유일하게 자동 호출을 허용** ([근거](AGENTS.md)) |
 | [ai-skill-integration](skills/ai-skill-integration/) | Claude 와 Codex 에 흩어진 스킬을 대조해 어느 쪽이 최신인지 근거와 함께 보고하고, **방향을 사용자에게 물어** 맞춘다. 저장소 관리분·다른 패키지·계보 충돌은 제외 |
 | [chrome-extension-ai-guidance](skills/chrome-extension-ai-guidance/) | Chrome 팀의 "코딩 에이전트로 확장 프로그램 빌드" 가이드를 **매번 원문으로 받아** 이 프로젝트에 도입할지 축별로 판정하고 `docs/decisions/` 에 남긴다. 분석만 하고 설치하지 않는다 |
