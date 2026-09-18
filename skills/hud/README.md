@@ -3,7 +3,7 @@
 Claude Code 상태줄 HUD.
 
 ```
-repo:some-repo  branch:main
+repo:some-repo  branch:main  ~/Dev/some-repo
 Opus 5 | ctx:43% | 5h:18%(3h1m) wk:63%(9/8(화) 23:10) | $8.25 | 3h32m | +231/-47
 ```
 
@@ -113,6 +113,7 @@ exec env -u NODE_OPTIONS node "$dir/hud.mjs"
 | --- | --- | --- |
 | `repo:` | `workspace.repo.name` | — |
 | `branch:` | `.git/HEAD` 직접 읽기 | — |
+| 실행 경로 | `workspace.current_dir` 또는 `cwd` | — |
 | 모델명 | `model.display_name` | — |
 | `ctx:` | `context_window.used_percentage` | 70% 노랑 / 85% 빨강 |
 | `5h:` `wk:` | `rate_limits.*.used_percentage` | 60% 노랑 / 85% 빨강 |
@@ -121,6 +122,8 @@ exec env -u NODE_OPTIONS node "$dir/hud.mjs"
 | `+N/-N` | `cost.total_lines_*` | 둘 다 0이면 숨김 |
 
 임계값은 `bin/hud.mjs` 상단 `CONFIG` 에서 조정한다.
+
+실행 경로는 홈 아래면 `~` 로 줄인다(`$HOME` 미설정이면 절대 경로 그대로). **파일시스템을 확인하지 않는 순수 문자열 변환이라, 경로가 실재하지 않아도 그려진다** — `branch:` 와 갈리는 지점이다. 상태줄이 알려주려는 것은 "어디서 돌고 있다고 보고받았는가" 이지 그 경로가 지금 존재하는지가 아니다.
 
 `5h:` 뒤의 괄호는 **리셋까지 남은 시간**(`3h1m`), `wk:` 뒤의 괄호는 **리셋되는 절대 시각**이다. 5시간 창은 몇 시간 뒤라 남은 시간이 직관적이고, 7일 창은 며칠 뒤라 시각이 직관적이라서 표기를 다르게 뒀다. `wk:` 는 오늘 안이면 `23:10`, 다른 날이면 `9/8(화) 23:10` 처럼 날짜와 요일을 붙인다.
 
@@ -138,7 +141,7 @@ exec env -u NODE_OPTIONS node "$dir/hud.mjs"
 jq -c . docs/payload-example.json | ./bin/hud | cat -v
 ```
 
-픽스처의 `cwd` 는 실재하지 않는 경로라서 `branch:` 항목은 빠진다. 이것이 정상 동작이다 — 필드를 얻을 수 없으면 그 항목만 사라진다.
+픽스처의 `cwd` 는 실재하지 않는 경로라서 `branch:` 항목은 빠진다. 이것이 정상 동작이다 — 필드를 얻을 수 없으면 그 항목만 사라진다. **실행 경로는 같은 조건에서도 그려진다** — 파일시스템을 보지 않기 때문이다. 픽스처의 홈이 실행 환경의 `$HOME` 과 다르므로 `~` 축약 없이 절대 경로로 나온다.
 
 깨진 `NODE_OPTIONS` 아래에서도 같은 출력이 나와야 한다.
 

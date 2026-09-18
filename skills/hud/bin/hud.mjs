@@ -111,6 +111,21 @@ function formatCost(usd) {
   return usd < 1 ? `$${usd.toFixed(3)}` : `$${usd.toFixed(2)}`;
 }
 
+/**
+ * 절대 경로 → "~/my/Dev/repo". 홈 밖이면 그대로 둔다.
+ *
+ * 파일시스템을 건드리지 않는 순수 문자열 변환이다 — 경로가 실재하지 않아도
+ * 그대로 그린다. 상태줄이 알려주려는 것은 "어디서 돌고 있다고 보고받았는가" 이지
+ * 그 경로가 지금 존재하는지가 아니다.
+ */
+function shortenPath(p) {
+  const home = process.env.HOME;
+  if (!home) return p;
+  if (p === home) return "~";
+  // `home + "/"` 로 비교한다. 단순 startsWith 는 `/Users/jjw` 가 `/Users/jjwood` 에도 걸린다
+  return p.startsWith(home + "/") ? "~" + p.slice(home.length) : p;
+}
+
 // ── git 브랜치 ────────────────────────────────────────────
 
 /**
@@ -178,6 +193,8 @@ function render(d) {
   if (cwd) {
     const branch = gitBranch(cwd);
     if (branch) top.push(dim("branch:") + cyan(branch));
+    // 실행 위치. 레이블을 붙이지 않는다 — 슬래시가 이미 경로임을 말한다
+    top.push(dim(shortenPath(cwd)));
   }
   if (top.length) lines.push(top.join("  "));
 
