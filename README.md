@@ -24,6 +24,7 @@ skills/
 | [obsidian-plugin-local-deployment](skills/obsidian-plugin-local-deployment/) | 직접 만든 Obsidian 커스텀 플러그인을 로컬 vault 의 `.obsidian/plugins/` 로 배포. vault 경로를 최초 1회 탐지해 저장하고, 이후 빌드 → 복사 → 리로드 안내까지 처리 |
 | [vscode-vsix-local-deployment](skills/vscode-vsix-local-deployment/) | 로컬 VS Code 확장 저장소나 VSIX를 `code --install-extension`으로 설치하고 manifest 호환성과 실제 설치 ID·버전을 검증 |
 | [cmux-where](skills/cmux-where/) | cmux 세션이 자기 위치(workspace·pane·surface 와 좌/우/상/하)와 형제 터미널 지도를 파악. `pane.list` 의 `pixel_frame` 으로 판정해 `cmux tree` 의 index 순서 오독을 막는다. **이 저장소에서 유일하게 자동 호출을 허용** ([근거](AGENTS.md)) |
+| [cmux-appearance](skills/cmux-appearance/) | cmux 색감(Rose Pine Dawn)·글꼴(D2Coding 15pt) 스냅샷과 설정 파일 위치·복원 절차. Ghostty 설정이 `~/.config/ghostty/config` 가 아니라 앱 지원 폴더에 있다는 점을 기록 |
 | [ai-skill-integration](skills/ai-skill-integration/) | Claude 와 Codex 에 흩어진 스킬을 대조해 어느 쪽이 최신인지 근거와 함께 보고하고, **방향을 사용자에게 물어** 맞춘다. 저장소 관리분·다른 패키지·계보 충돌은 제외 |
 | [chrome-extension-ai-guidance](skills/chrome-extension-ai-guidance/) | Chrome 팀의 "코딩 에이전트로 확장 프로그램 빌드" 가이드를 **매번 원문으로 받아** 이 프로젝트에 도입할지 축별로 판정하고 `docs/decisions/` 에 남긴다. 분석만 하고 설치하지 않는다 |
 | [obsidian-plugin-troubleshooting](skills/obsidian-plugin-troubleshooting/) | Obsidian 플러그인 트러블슈팅 기록의 **색인**. 내용은 `references/` 에 두고 SKILL.md 는 증상→문서 표만 갖는다. `bin/scan-sources.py` 가 원본 프로젝트에서 새 문서·변경을 탐지한다 |

@@ -1,0 +1,11 @@
+{
+  "appearanceMode": "light",
+  "sidebarPreset": "nativeSidebar",
+  "sidebarMaterial": "sidebar",
+  "sidebarBlendMode": "withinWindow",
+  "sidebarTintHex": "#000000",
+  "sidebarTintOpacity": "0.18",
+  "sidebarBlurOpacity": "1",
+  "sidebarCornerRadius": "0",
+  "sidebarState": "followWindow"
+}
