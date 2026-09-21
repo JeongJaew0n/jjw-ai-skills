@@ -184,17 +184,24 @@ function gitBranch(startDir) {
 function render(d) {
   const lines = [];
 
-  // 1행: 레포 / 브랜치
+  // 1행: 레포 / 브랜치 / 실행 위치
   const top = [];
   const repoName = d?.workspace?.repo?.name;
-  if (repoName) top.push(dim("repo:") + cyan(repoName));
-
   const cwd = d?.workspace?.current_dir || d?.cwd;
+  const shortCwd = cwd ? shortenPath(cwd) : null;
+
+  // 경로의 마지막 조각이 레포 이름과 같으면 `repo:` 를 생략한다.
+  // 레포 루트에서 도는 것이 보통이라, 그대로 두면 한 줄에 같은 이름이 두 번 나온다
+  // (`repo:jjw-ai-skills  branch:main  ~/my/Dev/jjw-ai-skills`).
+  // 하위 디렉터리·워크트리처럼 마지막 조각이 다르면 레포 이름이 정보를 더하므로 남긴다.
+  const lastSeg = shortCwd ? shortCwd.split("/").filter(Boolean).pop() : null;
+  if (repoName && repoName !== lastSeg) top.push(dim("repo:") + cyan(repoName));
+
   if (cwd) {
     const branch = gitBranch(cwd);
     if (branch) top.push(dim("branch:") + cyan(branch));
     // 실행 위치. 레이블을 붙이지 않는다 — 슬래시가 이미 경로임을 말한다
-    top.push(dim(shortenPath(cwd)));
+    top.push(dim(shortCwd));
   }
   if (top.length) lines.push(top.join("  "));
 

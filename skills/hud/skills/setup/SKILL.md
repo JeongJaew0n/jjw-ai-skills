@@ -152,10 +152,10 @@ CMD=$(jq -r '.statusLine.command' ~/.claude/settings.json)
 jq -c . "$ROOT/docs/payload-example.json" | sh -c "$CMD" | cat -v
 ```
 
-기대 결과 — ANSI 코드가 섞인 두 줄. 픽스처의 `cwd` 는 실재하지 않는 경로라서 `branch:` 항목은 빠지는 것이 정상이다. **실행 경로는 그 조건에서도 나온다** — 파일시스템을 보지 않기 때문이고, 픽스처의 홈이 실행 환경의 `$HOME` 과 달라 `~` 축약 없이 절대 경로로 그려진다.
+기대 결과 — ANSI 코드가 섞인 두 줄. 픽스처의 마지막 경로 조각이 레포 이름과 같아 `repo:` 는 생략된다(중복 억제). 픽스처의 `cwd` 는 실재하지 않는 경로라서 `branch:` 항목은 빠지는 것이 정상이다. **실행 경로는 그 조건에서도 나온다** — 파일시스템을 보지 않기 때문이고, 픽스처의 홈이 실행 환경의 `$HOME` 과 달라 `~` 축약 없이 절대 경로로 그려진다.
 
 ```
-^[[2mrepo:^[[0m^[[36msome-repo^[[0m  ^[[2m/Users/me/Dev/some-repo^[[0m
+^[[2m/Users/me/Dev/some-repo^[[0m
 ^[[1mOpus 5^[[0m^[[2m | ^[[0m^[[2mctx:^[[0m^[[32m43%^[[0m ...
 ```
 

@@ -1,11 +1,15 @@
 {
   "name": "hud",
   "description": "Claude Code 상태줄 HUD — 의존성 0, 외부 프로세스 spawn 0, MCP 0. 레포/브랜치/실행 경로, 모델, 컨텍스트 사용률, rate limit, 세션 비용을 한 줄에 그린다. 요구사항: Node 14+, macOS/Linux/WSL.",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "author": {
     "name": "정재원",
     "email": "popt0@innogrid.com"
   },
   "homepage": "https://github.com/JeongJaew0n/jjw-ai-skills/tree/main/skills/hud",
-  "keywords": ["statusline", "hud", "zero-dependency"]
+  "keywords": [
+    "statusline",
+    "hud",
+    "zero-dependency"
+  ]
 }

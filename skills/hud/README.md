@@ -3,7 +3,7 @@
 Claude Code 상태줄 HUD.
 
 ```
-repo:some-repo  branch:main  ~/Dev/some-repo
+repo:some-repo  branch:main  ~/Dev/some-repo/src/panel
 Opus 5 | ctx:43% | 5h:18%(3h1m) wk:63%(9/8(화) 23:10) | $8.25 | 3h32m | +231/-47
 ```
 
@@ -50,7 +50,7 @@ hud -> /path/to/jjw-ai-skills/skills/hud
 
 $ claude plugin list
 Skills-directory plugins (.claude/skills/*):
-  ❯ hud@skills-dir   Version: 0.2.0   Status: ✔ loaded
+  ❯ hud@skills-dir   Version: 0.4.1   Status: ✔ loaded
 ```
 
 링크로 설치하면 `git pull` 이 곧바로 반영된다. 자동 로드는 **다음 세션부터** 걸린다.
@@ -111,7 +111,7 @@ exec env -u NODE_OPTIONS node "$dir/hud.mjs"
 
 | 항목 | 소스 | 임계값 |
 | --- | --- | --- |
-| `repo:` | `workspace.repo.name` | — |
+| `repo:` | `workspace.repo.name` | 경로의 마지막 조각과 같으면 **생략** |
 | `branch:` | `.git/HEAD` 직접 읽기 | — |
 | 실행 경로 | `workspace.current_dir` 또는 `cwd` | — |
 | 모델명 | `model.display_name` | — |
@@ -120,6 +120,8 @@ exec env -u NODE_OPTIONS node "$dir/hud.mjs"
 | 비용 | `cost.total_cost_usd` | $20 노랑 / $50 빨강 |
 | 경과 시간 | `cost.total_duration_ms` | — |
 | `+N/-N` | `cost.total_lines_*` | 둘 다 0이면 숨김 |
+
+`repo:` 는 실행 경로의 마지막 조각과 이름이 같으면 그리지 않는다. 레포 루트에서 도는 것이 보통이라 그대로 두면 한 줄에 같은 이름이 두 번 나온다. 하위 디렉터리·워크트리처럼 마지막 조각이 다르면 레포 이름이 정보를 더하므로 남긴다.
 
 임계값은 `bin/hud.mjs` 상단 `CONFIG` 에서 조정한다.
 
