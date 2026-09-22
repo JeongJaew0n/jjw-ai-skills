@@ -1,55 +1,90 @@
 # jjw-ai-skills
 
-직접 만든 Claude Code 스킬 모음.
+Claude Code 와 Codex 에서 쓰는, 직접 만든 스킬 모음입니다.
+스킬은 `/스킬이름` 으로 부르는 작은 작업 절차예요. 자주 반복하는 일을 한 번 정리해 두고 매번 같은 방식으로 시키기 위해 만들었습니다.
 
-## 구조
-
-```
-skills/
-└── <skill-name>/
-    └── SKILL.md      # 스킬 1개 = 디렉터리 1개 + SKILL.md (디렉터리명 = 스킬명)
-```
-
-단계가 여러 개인 묶음 스킬은 해당 디렉터리 안에 하위 디렉터리로 중첩한다.
-(Claude Code는 깊이와 무관하게 `SKILL.md`를 탐색한다.)
-
-## 스킬 목록
-
-| Skill | Description |
-|-------|-------------|
-| [ai-plan-memory](skills/ai-plan-memory/) | 작업 계획을 `docs/plans/<slug>/`에 영속 기록(spec·context·checklist)해 세션 간 재개 가능하게 함 |
-| [ai-interview-tech](skills/ai-interview-tech/) | 요구사항을 바로 구현으로 넘기기 전에, 숨은 기술 결정(트랜잭션 경계·멱등성·실패 처리·호환성 등)을 코드베이스 근거로 드러내 사람과 확정 |
-| [review-code-intent](skills/review-code-intent/) | PR 리뷰를 Intent Review(사람의 이해·기억용), Tech Review(구현 안전성 검증용), Intent Implementation Review(의도 달성도 측정용) 세 축으로 분리해 `docs/reviews/[PR번호] [PR이름]/`에 산출 |
-| [hud](skills/hud/) | Claude Code 상태줄 HUD 플러그인 — 의존성 0·spawn 0·MCP 0. `/hud:setup` 으로 `statusLine` 을 설치한다 |
-| [obsidian-plugin-local-deployment](skills/obsidian-plugin-local-deployment/) | 직접 만든 Obsidian 커스텀 플러그인을 로컬 vault 의 `.obsidian/plugins/` 로 배포. vault 경로를 최초 1회 탐지해 저장하고, 이후 빌드 → 복사 → 리로드 안내까지 처리 |
-| [vscode-vsix-local-deployment](skills/vscode-vsix-local-deployment/) | 로컬 VS Code 확장 저장소나 VSIX를 `code --install-extension`으로 설치하고 manifest 호환성과 실제 설치 ID·버전을 검증 |
-| [cmux-where](skills/cmux-where/) | cmux 세션이 자기 위치(workspace·pane·surface 와 좌/우/상/하)와 형제 터미널 지도를 파악. `pane.list` 의 `pixel_frame` 으로 판정해 `cmux tree` 의 index 순서 오독을 막는다. **이 저장소에서 유일하게 자동 호출을 허용** ([근거](AGENTS.md)) |
-| [cmux-appearance](skills/cmux-appearance/) | cmux 색감(Rose Pine Dawn)·글꼴(D2Coding 15pt) 스냅샷과 설정 파일 위치·복원 절차. Ghostty 설정이 `~/.config/ghostty/config` 가 아니라 앱 지원 폴더에 있다는 점을 기록 |
-| [ai-skill-integration](skills/ai-skill-integration/) | Claude 와 Codex 에 흩어진 스킬을 대조해 어느 쪽이 최신인지 근거와 함께 보고하고, **방향을 사용자에게 물어** 맞춘다. 저장소 관리분·다른 패키지·계보 충돌은 제외 |
-| [chrome-extension-ai-guidance](skills/chrome-extension-ai-guidance/) | Chrome 팀의 "코딩 에이전트로 확장 프로그램 빌드" 가이드를 **매번 원문으로 받아** 이 프로젝트에 도입할지 축별로 판정하고 `docs/decisions/` 에 남긴다. 분석만 하고 설치하지 않는다 |
-| [obsidian-plugin-troubleshooting](skills/obsidian-plugin-troubleshooting/) | Obsidian 플러그인 트러블슈팅 기록의 **색인**. 내용은 `references/` 에 두고 SKILL.md 는 증상→문서 표만 갖는다. `bin/scan-sources.py` 가 원본 프로젝트에서 새 문서·변경을 탐지한다 |
-| [my-app-init](skills/my-app-init/) | 새 프로젝트 초기 세팅 — git 신원·커밋 정책·브랜치 정책을 묻고 `git config --local` 과 `CLAUDE.md` 에 고정, `docs/plans`·`docs/glossary`·`docs/troubleshootings`(project-specific·reusable) 골격 생성, 멀티 기능 제품이면 기능 묶음 단위 이름(기본 `FeatureGroup`) 확정, README·CLAUDE.md 작성 |
-| [create-another-rc-session](skills/create-another-rc-session/) | Remote Control 에서 `/cd` 가 막혔을 때 대상 디렉터리에 RC 서버를 띄워 세션을 새로 만든다. 워크스페이스 신뢰 게이트 우회는 사용자 확인 필수이며 자동 로드 설정이 있는 디렉터리는 하드 거부 |
-| [diagnose](skills/diagnose/) | 근본 원인을 찾고 나서 고치는 체계적 디버깅(Iron Law·5단계·3-strike 룰). gstack `investigate` 에서 프레임워크 결합을 걷어내 포팅했고, 기록 위치는 레포를 훑어 사용자에게 묻고 `CLAUDE.md` 에 고정한다 |
-| [what-did-i-do-today](skills/what-did-i-do-today/) | 최근 24시간(기간 조정 가능) 사용자가 입력한 프롬프트를 모든 세션에서 모아 세션별 요약. 전사의 `origin.kind`·`promptSource` 로 직접 입력과 AI·시스템 자동 입력을 구분 |
-
-## 설치
+## 3분 만에 시작하기
 
 ```bash
-./bin/install.sh              # Claude Code + Codex 양쪽에 설치
-./bin/install.sh --check      # 현재 상태만 점검
-./bin/install.sh --dry-run    # 무엇을 할지만 출력
+git clone https://github.com/JeongJaew0n/jjw-ai-skills.git
+cd jjw-ai-skills
+./bin/install.sh
 ```
 
-복사가 아니라 **심볼릭 링크**를 건다. 복사본은 이 저장소를 고쳐도 반영되지 않아
-어느 쪽이 최신인지 알 수 없게 되는데, 실제로 그 상태가 한 번 만들어졌었다.
+이게 전부입니다. 이제 **새 세션을 열고** `/` 를 치면 아래 스킬들이 목록에 나옵니다.
 
-| 대상 | 정책이 걸리는 자리 |
+> 이미 켜 둔 세션에는 안 보여요. 스킬은 세션이 시작될 때 읽히기 때문에, 설치한 뒤 한 번은 새로 열어야 합니다.
+
+상태줄(hud)까지 쓰고 싶으면 새 세션에서 한 번만 더 입력합니다.
+
+```
+/hud:setup
+```
+
+## 스킬 부르는 법
+
+- **`/스킬이름`** 또는 **`$스킬이름`** 으로 부릅니다. 예: `/diagnose 저장 버튼 누르면 500 에러`
+- 이름만 말하는 건("diagnose 로 봐줘") 호출이 아니에요. AI 가 스킬을 알아서 고르지 않도록 막아 뒀기 때문입니다. 대신 슬래시로 불러 달라고 안내할 거예요.
+- 예외는 `cmux-where` 하나입니다. "왼쪽 터미널에 물어봐" 같은 말을 하면 위치 파악까지는 알아서 합니다. 읽기만 하고 아무것도 바꾸지 않는 스킬이라서요. ([왜 이렇게 했는지](AGENTS.md))
+
+## 어떤 스킬이 있나
+
+<!-- 스킬을 추가·수정하면 아래 표도 함께 고칩니다. 맞는 묶음에 한 줄 넣으면 됩니다. -->
+
+### 개발 흐름 — 계획하고, 만들고, 리뷰하고, 고치기
+
+| 스킬 | 언제 쓰나 |
 |---|---|
-| `~/.claude/skills/` | `SKILL.md` frontmatter 의 `disable-model-invocation` |
-| `~/.codex/skills/` | `agents/openai.yaml` 의 `allow_implicit_invocation` |
+| [my-app-init](skills/my-app-init/) | 새 프로젝트를 시작할 때. git 규칙·`docs/` 골격·README·CLAUDE.md 같은 첫 세팅을 물어보며 한 번에 끝냅니다 |
+| [ai-interview-tech](skills/ai-interview-tech/) | 기능을 만들기 **전에**. 코드를 근거로 "실패하면 어떻게 하지", "두 번 실행돼도 괜찮나" 같은 숨은 결정을 질문으로 끌어내 함께 정합니다 |
+| [ai-plan-memory](skills/ai-plan-memory/) | 작업 계획을 `docs/plans/` 에 남겨 두고 싶을 때. 다음 세션에서 그대로 이어서 할 수 있습니다 |
+| [review-code-intent](skills/review-code-intent/) | PR 을 리뷰할 때. "왜 만들었나 / 안전한가 / 의도대로 됐나" 세 갈래로 나눠 `docs/reviews/` 에 문서로 남깁니다 |
+| [diagnose](skills/diagnose/) | 버그를 잡을 때. 원인을 찾기 전에는 고치지 않고, 찾은 원인은 기록으로 남겨 다음에 다시 겪지 않게 합니다 |
 
-Codex 는 frontmatter 를 읽지 않으므로 `agents/openai.yaml` 이 따로 필요하다.
-이 파일은 `install.sh` 가 frontmatter 에서 **생성**하므로 직접 고치지 않는다.
+### Claude Code 자체를 다루기
 
-저장소에 없는 전역 스킬은 건드리지 않고 목록만 보여준다.
+| 스킬 | 언제 쓰나 |
+|---|---|
+| [hud](skills/hud/) | 상태줄에 레포·브랜치·현재 폴더·모델·컨텍스트 사용률·비용을 보여줍니다. 설치 후 `/hud:setup` 한 번 |
+| [what-did-i-do-today](skills/what-did-i-do-today/) | "오늘 내가 뭘 시켰지?" 모든 세션의 입력을 모아 세션별로 보여줍니다. 기간을 바꿀 수도 있어요 |
+| [ai-skill-integration](skills/ai-skill-integration/) | Claude 와 Codex 에 설치된 스킬이 서로 달라졌을 때. 어느 쪽이 최신인지 근거를 보여주고, 고른 방향으로 맞춥니다 |
+| [create-another-rc-session](skills/create-another-rc-session/) | 폰(Remote Control)에서 다른 폴더로 옮길 수 없을 때. 그 폴더에서 새 세션을 띄워 줍니다 |
+
+### 터미널(cmux)
+
+| 스킬 | 언제 쓰나 |
+|---|---|
+| [cmux-where](skills/cmux-where/) | "왼쪽 터미널", "아래 창" 이 실제로 어디인지 화면 좌표로 알아냅니다. 유일하게 알아서 불리는 스킬 |
+| [cmux-appearance](skills/cmux-appearance/) | 지금 쓰는 색감·글꼴 설정을 기록해 둔 곳. 설정이 날아갔거나 다른 컴퓨터에서 같은 화면을 만들 때 되돌립니다 |
+
+### 플러그인·확장 프로그램 만들기
+
+| 스킬 | 언제 쓰나 |
+|---|---|
+| [obsidian-plugin-local-deployment](skills/obsidian-plugin-local-deployment/) | 만든 Obsidian 플러그인을 내 vault 에 바로 배포합니다. vault 위치는 처음 한 번만 물어봅니다 |
+| [obsidian-plugin-troubleshooting](skills/obsidian-plugin-troubleshooting/) | Obsidian 플러그인 만들다 겪은 문제들의 색인. 앱이 멈추거나 클립보드 서식이 깨지면 먼저 여기서 찾아봅니다 |
+| [vscode-vsix-local-deployment](skills/vscode-vsix-local-deployment/) | 로컬에서 만든 VS Code 확장(VSIX)을 설치하고, 제대로 들어갔는지 ID 와 버전으로 확인합니다 |
+| [chrome-extension-ai-guidance](skills/chrome-extension-ai-guidance/) | Chrome 팀의 "AI 로 확장 만들기" 가이드를 매번 새로 읽어와 내 프로젝트에 적용할지 판단합니다. 판단만 하고 설치는 하지 않아요 |
+
+## 설치가 잘 됐는지 보기
+
+```bash
+./bin/install.sh --check      # 지금 상태만 보여줍니다. 아무것도 바꾸지 않아요
+./bin/install.sh --dry-run    # 설치하면 무슨 일이 일어날지 미리 보기
+```
+
+스킬마다 `.claude` 와 `.codex` 두 줄이 나옵니다. `이미 연결됨` 이면 끝난 것이고, `연결 예정` 이면 `./bin/install.sh` 를 한 번 더 돌리면 됩니다.
+
+## 알아두면 좋은 것
+
+**복사가 아니라 링크로 설치됩니다.** `~/.claude/skills/` 와 `~/.codex/skills/` 에 이 저장소를 가리키는 심볼릭 링크가 걸려요. 그래서 여기서 `git pull` 만 하면 설치된 스킬도 같이 새 버전이 됩니다. (예전에 복사본으로 설치했다가 어느 쪽이 최신인지 알 수 없게 된 적이 있어서 이렇게 바꿨습니다.)
+
+**`agents/openai.yaml` 은 손대지 않아도 됩니다.** 각 스킬 폴더에 있는 이 파일은 Codex 용인데, `install.sh` 가 `SKILL.md` 를 보고 자동으로 만들어요. 고쳐도 다음 설치 때 덮어씌워집니다.
+
+**저장소에 없는 스킬은 건드리지 않습니다.** 전역에 따로 넣어 둔 스킬이 있어도 `install.sh` 는 목록에만 보여주고 지우지 않아요.
+
+## 더 알아보기
+
+- 스킬을 새로 만들거나 고치려면 → [AGENTS.md](AGENTS.md) (작성 규칙과 "왜 슬래시로만 부르게 했나")
+- 이 저장소에서 작업하는 규칙(커밋·브랜치·문서 위치) → [CLAUDE.md](CLAUDE.md)
+- 각 스킬이 정확히 무엇을 하는지 → 해당 폴더의 `SKILL.md`
