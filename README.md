@@ -48,6 +48,7 @@ cd jjw-ai-skills
 | [hud](skills/hud/) | 상태줄에 레포·브랜치·현재 폴더·모델·컨텍스트 사용률·비용을 보여줍니다. 설치 후 `/hud:setup` 한 번 |
 | [what-did-i-do-today](skills/what-did-i-do-today/) | "오늘 내가 뭘 시켰지?" 모든 세션의 입력을 모아 세션별로 보여줍니다. 기간을 바꿀 수도 있어요 |
 | [ai-skill-integration](skills/ai-skill-integration/) | Claude 와 Codex 에 설치된 스킬이 서로 달라졌을 때. 어느 쪽이 최신인지 근거를 보여주고, 고른 방향으로 맞춥니다 |
+| [claude-sessions](skills/claude-sessions/) | "지금 다른 Claude 세션 돌고 있나?" 이 맥의 세션을 모두 찾아 폴더·작업 중/대기·마지막 활동을 표로 보여줍니다. 읽기만 해요 |
 | [create-another-rc-session](skills/create-another-rc-session/) | 폰(Remote Control)에서 다른 폴더로 옮길 수 없을 때. 그 폴더에서 새 세션을 띄워 줍니다 |
 
 ### 터미널(cmux)
