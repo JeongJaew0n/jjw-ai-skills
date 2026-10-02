@@ -17,7 +17,7 @@
 - [x] what-did-i-do-today (116)
 - [x] ai-skill-integration (161)
 - [x] chrome-extension-ai-guidance (191)
-- [ ] ai-interview-tech (192)
+- [x] ai-interview-tech (192)
 - [ ] obsidian-plugin-local-deployment (199)
 - [ ] hud/skills/setup (199)
 - [ ] cmux-where (220)
