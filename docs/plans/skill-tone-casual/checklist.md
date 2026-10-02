@@ -21,7 +21,7 @@
 - [x] obsidian-plugin-local-deployment (199)
 - [x] hud/skills/setup (199)
 - [x] cmux-where (220)
-- [ ] create-another-rc-session (229)
+- [x] create-another-rc-session (229)
 - [ ] diagnose (257)
 - [ ] my-app-init (296)
 - [ ] review-code-intent (394)
