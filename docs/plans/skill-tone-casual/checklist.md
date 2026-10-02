@@ -4,9 +4,9 @@
 > 새 항목이 생기면 맞는 단계에 끼워 넣는다.
 
 ## 0. 준비
-- [ ] 사용자에게 [미정] 범위(hud README, references) 확정받기
-- [ ] 작업 전 `./bin/install.sh --check` 출력 저장 (scratchpad)
-- [ ] 15개 파일의 frontmatter·코드 블록 원본 추출 (scratchpad, 비교용)
+- [x] 사용자에게 [미정] 범위 확정받기 — hud README 는 해요체로 포함, references 는 제외
+- [x] 작업 전 `./bin/install.sh --check` 출력 저장 (scratchpad)
+- [x] 비교 스크립트 준비 — HEAD 와 작업본의 frontmatter·코드 블록을 비교 (scratchpad/verify.py)
 
 ## 1. 변환 — 파일 하나 끝낼 때마다 검증하고 커밋·푸시
 짧은 것부터 해서 문체 기준을 먼저 굳힌다.
@@ -25,6 +25,7 @@
 - [ ] diagnose (257)
 - [ ] my-app-init (296)
 - [ ] review-code-intent (394)
+- [ ] hud/README.md (175) — 해요체
 
 ## 2. 검증 (파일마다)
 - [ ] frontmatter diff 0

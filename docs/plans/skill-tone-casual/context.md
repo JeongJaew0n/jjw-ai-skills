@@ -30,3 +30,7 @@
 - 기준 문서: `skills/ai-plan-docs/SKILL.md`
 - 작성 규칙: `AGENTS.md`
 - 문체 지침: `~/.claude/CLAUDE.md` 9절 Communication Style
+
+## 변경 이력
+- 2026-10-02: 사람이 읽는 문서는 해요체로 하기로 확정 → `skills/hud/README.md` 를 범위에 포함.
+  `references/*.md` 는 그대로 두기로 확정.
