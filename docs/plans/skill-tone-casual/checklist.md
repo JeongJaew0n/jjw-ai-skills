@@ -24,7 +24,7 @@
 - [x] create-another-rc-session (229)
 - [x] diagnose (257)
 - [x] my-app-init (296)
-- [ ] review-code-intent (394)
+- [x] review-code-intent (394)
 - [ ] hud/README.md (175) — 해요체
 
 ## 2. 검증 (파일마다)
