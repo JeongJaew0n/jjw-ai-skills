@@ -15,7 +15,7 @@
 - [x] obsidian-plugin-troubleshooting (102)
 - [x] cmux-appearance (109)
 - [x] what-did-i-do-today (116)
-- [ ] ai-skill-integration (161)
+- [x] ai-skill-integration (161)
 - [ ] chrome-extension-ai-guidance (191)
 - [ ] ai-interview-tech (192)
 - [ ] obsidian-plugin-local-deployment (199)
