@@ -25,7 +25,7 @@
 - [x] diagnose (257)
 - [x] my-app-init (296)
 - [x] review-code-intent (394)
-- [ ] hud/README.md (175) — 해요체
+- [x] hud/README.md (175) — 해요체
 
 ## 2. 검증 (파일마다)
 - [ ] frontmatter diff 0
