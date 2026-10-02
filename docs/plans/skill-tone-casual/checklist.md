@@ -10,7 +10,7 @@
 
 ## 1. 변환 — 파일 하나 끝낼 때마다 검증하고 커밋·푸시
 짧은 것부터 해서 문체 기준을 먼저 굳힌다.
-- [ ] claude-sessions (63)
+- [x] claude-sessions (63)
 - [ ] vscode-vsix-local-deployment (88)
 - [ ] obsidian-plugin-troubleshooting (102)
 - [ ] cmux-appearance (109)
