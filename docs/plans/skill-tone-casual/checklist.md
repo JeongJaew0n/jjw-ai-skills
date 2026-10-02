@@ -20,7 +20,7 @@
 - [x] ai-interview-tech (192)
 - [x] obsidian-plugin-local-deployment (199)
 - [x] hud/skills/setup (199)
-- [ ] cmux-where (220)
+- [x] cmux-where (220)
 - [ ] create-another-rc-session (229)
 - [ ] diagnose (257)
 - [ ] my-app-init (296)
