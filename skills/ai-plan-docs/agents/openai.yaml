@@ -1,7 +1,7 @@
 # bin/install.sh 가 SKILL.md frontmatter 에서 생성한다. 직접 고치지 말 것.
 interface:
-  display_name: "ai-plan-memory"
-  default_prompt: "Use $ai-plan-memory."
+  display_name: "ai-plan-docs"
+  default_prompt: "Use $ai-plan-docs."
 
 policy:
   allow_implicit_invocation: false

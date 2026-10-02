@@ -154,15 +154,15 @@ B 처럼 commit 이후 발행하는 방식이 더 적합합니다.
 
 영속화 방법은 우선순위가 있다.
 
-1. **`ai-plan-memory` 스킬이 있으면 그쪽에 위임한다.** 새 저장 규약을 따로 만들지 않는다. 인터뷰 산출물은 그 스킬의 세 파일과 자연스럽게 대응한다.
+1. **`ai-plan-docs` 스킬이 있으면 그쪽에 위임한다.** 새 저장 규약을 따로 만들지 않는다. 인터뷰 산출물은 그 스킬의 세 파일과 자연스럽게 대응한다.
    - 확정된 결정 표 + 근거 → `spec.md` / `context.md`
    - 논의에서 생략한 축 → `context.md`
    - 리뷰 검증 체크리스트 → `checklist.md`
    - 호출 시 위에서 정리한 결정 스펙을 그대로 넘겨 채워지게 한다.
 
-2. **`ai-plan-memory` 스킬이 없으면, 결정 스펙을 md 파일로 직접 저장한다.** `docs/decisions/<slug>.md` 에 4단계에서 정리한 결정 스펙 블록(요구사항 / 확정된 결정 / 생략한 축 / 리뷰 검증 체크리스트)을 그대로 쓴다. `<slug>` 는 기능 이름을 영문 kebab-case 로 정한다.
+2. **`ai-plan-docs` 스킬이 없으면, 결정 스펙을 md 파일로 직접 저장한다.** `docs/decisions/<slug>.md` 에 4단계에서 정리한 결정 스펙 블록(요구사항 / 확정된 결정 / 생략한 축 / 리뷰 검증 체크리스트)을 그대로 쓴다. `<slug>` 는 기능 이름을 영문 kebab-case 로 정한다.
 
-   **`docs/plans/` 안에 쓰지 않는다.** 그 폴더는 `ai-plan-memory` 가 `spec.md` / `context.md` / `checklist.md` 세 파일로 관리한다. 같은 폴더에 `decision-spec.md` 를 놓으면 나중에 `ai-plan-memory` 를 돌렸을 때 `spec.md` 와 내용이 겹쳐, 다음 세션이 어느 쪽을 정본으로 읽어야 할지 알 수 없게 된다.
+   **`docs/plans/` 안에 쓰지 않는다.** 그 폴더는 `ai-plan-docs` 가 `spec.md` / `context.md` / `checklist.md` 세 파일로 관리한다. 같은 폴더에 `decision-spec.md` 를 놓으면 나중에 `ai-plan-docs` 를 돌렸을 때 `spec.md` 와 내용이 겹쳐, 다음 세션이 어느 쪽을 정본으로 읽어야 할지 알 수 없게 된다.
 
 어느 경로든, 저장한 파일 경로를 사용자에게 짧게 알려 다음 세션이 픽업할 수 있게 한다.
 

@@ -37,7 +37,7 @@ cd jjw-ai-skills
 |---|---|
 | [my-app-init](skills/my-app-init/) | 새 프로젝트를 시작할 때. git 규칙·`docs/` 골격·README·CLAUDE.md 같은 첫 세팅을 물어보며 한 번에 끝냅니다 |
 | [ai-interview-tech](skills/ai-interview-tech/) | 기능을 만들기 **전에**. 코드를 근거로 "실패하면 어떻게 하지", "두 번 실행돼도 괜찮나" 같은 숨은 결정을 질문으로 끌어내 함께 정합니다 |
-| [ai-plan-memory](skills/ai-plan-memory/) | 작업 계획을 `docs/plans/` 에 남겨 두고 싶을 때. 다음 세션에서 그대로 이어서 할 수 있습니다 |
+| [ai-plan-docs](skills/ai-plan-docs/) | 작업 계획을 `docs/plans/` 에 남겨 두고 싶을 때. 다음 세션에서 그대로 이어서 할 수 있습니다 |
 | [review-code-intent](skills/review-code-intent/) | PR 을 리뷰할 때. "왜 만들었나 / 안전한가 / 의도대로 됐나" 세 갈래로 나눠 `docs/reviews/` 에 문서로 남깁니다 |
 | [diagnose](skills/diagnose/) | 버그를 잡을 때. 원인을 찾기 전에는 고치지 않고, 찾은 원인은 기록으로 남겨 다음에 다시 겪지 않게 합니다 |
 

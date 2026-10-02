@@ -293,4 +293,4 @@ docs/
 
 ## 다른 스킬과의 관계
 
-`docs/plans/<slug>/` 의 세 파일(`spec.md`·`context.md`·`checklist.md`)은 `ai-plan-memory` 가 채우는 구조와 같다. 이 스킬은 자리를 만들고, 그 스킬이 내용을 쓴다.
+`docs/plans/<slug>/` 의 세 파일(`spec.md`·`context.md`·`checklist.md`)은 `ai-plan-docs` 가 채우는 구조와 같다. 이 스킬은 자리를 만들고, 그 스킬이 내용을 쓴다.
