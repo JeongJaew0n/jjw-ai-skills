@@ -12,7 +12,7 @@
 짧은 것부터 해서 문체 기준을 먼저 굳힌다.
 - [x] claude-sessions (63)
 - [x] vscode-vsix-local-deployment (88)
-- [ ] obsidian-plugin-troubleshooting (102)
+- [x] obsidian-plugin-troubleshooting (102)
 - [ ] cmux-appearance (109)
 - [ ] what-did-i-do-today (116)
 - [ ] ai-skill-integration (161)
