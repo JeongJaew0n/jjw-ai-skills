@@ -13,7 +13,7 @@
 - [x] claude-sessions (63)
 - [x] vscode-vsix-local-deployment (88)
 - [x] obsidian-plugin-troubleshooting (102)
-- [ ] cmux-appearance (109)
+- [x] cmux-appearance (109)
 - [ ] what-did-i-do-today (116)
 - [ ] ai-skill-integration (161)
 - [ ] chrome-extension-ai-guidance (191)
