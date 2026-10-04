@@ -4,7 +4,7 @@ Claude Code 상태줄 HUD예요.
 
 ```
 repo:some-repo  branch:main  ~/Dev/some-repo/src/panel
-Opus 5 | ctx:43% | 5h:18%(3h1m) wk:63%(9/8(화) 23:10) | $8.25 | 3h32m | +231/-47
+Opus 5 high | ctx:43% | 5h:18%(3h1m) wk:63%(9/8(화) 23:10) | $8.25 | 3h32m | +231/-47
 ```
 
 ## 설계 원칙
@@ -115,6 +115,7 @@ exec env -u NODE_OPTIONS node "$dir/hud.mjs"
 | `branch:` | `.git/HEAD` 직접 읽기 | — |
 | 실행 경로 | `workspace.current_dir` 또는 `cwd` | — |
 | 모델명 | `model.display_name` | — |
+| 추론 노력 | `effort.level` | 모델명 바로 뒤. `low` `medium` `high` `xhigh` `max` |
 | `ctx:` | `context_window.used_percentage` | 70% 노랑 / 85% 빨강 |
 | `5h:` `wk:` | `rate_limits.*.used_percentage` | 60% 노랑 / 85% 빨강 |
 | 비용 | `cost.total_cost_usd` | $20 노랑 / $50 빨강 |
@@ -124,6 +125,8 @@ exec env -u NODE_OPTIONS node "$dir/hud.mjs"
 `repo:` 는 실행 경로의 마지막 조각과 이름이 같으면 그리지 않아요. 보통 레포 루트에서 돌기 때문에 그대로 두면 한 줄에 같은 이름이 두 번 나오거든요. 하위 디렉터리·워크트리처럼 마지막 조각이 다르면 레포 이름이 정보가 되니까 남겨요.
 
 임계값은 `bin/hud.mjs` 상단 `CONFIG` 에서 조정해요.
+
+추론 노력(`high` 같은 것)은 모델명 바로 뒤에 붙어요. Claude Code 가 **effort 를 지원하는 모델일 때만** 이 값을 보내기 때문에, 지원하지 않는 모델에서는 모델명만 보여요. `/effort` 로 바꾸면 다음 렌더에 바로 반영돼요.
 
 실행 경로는 홈 아래면 `~` 로 줄여요(`$HOME` 이 없으면 절대 경로 그대로). **파일시스템을 확인하지 않는 순수 문자열 변환이라서, 경로가 실제로 없어도 그려져요** — `branch:` 와 갈리는 지점이에요. 상태줄이 알려주려는 건 "어디서 돌고 있다고 보고받았는가" 이지, 그 경로가 지금 존재하는지가 아니에요.
 

@@ -209,8 +209,12 @@ function render(d) {
   const main = [];
 
   // 모델
+  // 모델 + 추론 노력(effort). effort 는 지원하는 모델일 때만 페이로드에 온다
+  // (`low | medium | high | xhigh | max`). 모델에 딸린 속성이라 구분자 없이 바로 붙인다
   const model = d?.model?.display_name;
-  if (model) main.push(bold(model));
+  const effort = d?.effort?.level;
+  if (model) main.push(bold(model) + (effort ? " " + cyan(effort) : ""));
+  else if (effort) main.push(cyan(effort));
 
   // 컨텍스트 사용률
   const ctx = d?.context_window?.used_percentage;

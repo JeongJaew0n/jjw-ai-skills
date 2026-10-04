@@ -156,7 +156,7 @@ jq -c . "$ROOT/docs/payload-example.json" | sh -c "$CMD" | cat -v
 
 ```
 ^[[2m/Users/me/Dev/some-repo^[[0m
-^[[1mOpus 5^[[0m^[[2m | ^[[0m^[[2mctx:^[[0m^[[32m43%^[[0m ...
+^[[1mOpus 5^[[0m ^[[36mhigh^[[0m^[[2m | ^[[0m^[[2mctx:^[[0m^[[32m43%^[[0m ...
 ```
 
 깨진 `NODE_OPTIONS` 아래에서도 같은 출력이 나오는지 같이 확인해. 런처가 있는 이유가 이거야.

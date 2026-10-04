@@ -5,6 +5,9 @@
     "id": "claude-opus-5[1m]",
     "display_name": "Opus 5"
   },
+  "effort": {
+    "level": "high"
+  },
   "workspace": {
     "current_dir": "/Users/me/Dev/some-repo",
     "project_dir": "/Users/me/Dev/some-repo",
