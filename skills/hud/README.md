@@ -115,7 +115,7 @@ exec env -u NODE_OPTIONS node "$dir/hud.mjs"
 | `branch:` | `.git/HEAD` 직접 읽기 | — |
 | 실행 경로 | `workspace.current_dir` 또는 `cwd` | — |
 | 모델명 | `model.display_name` | — |
-| 추론 노력 | `effort.level` | 모델명 바로 뒤. `low` `medium` `high` `xhigh` `max` |
+| 추론 노력 | `effort.level` | `low` 흐림 / `medium` 기본 / `high` 청록 / `xhigh` 자주 / `max` 굵은 자주 |
 | `ctx:` | `context_window.used_percentage` | 70% 노랑 / 85% 빨강 |
 | `5h:` `wk:` | `rate_limits.*.used_percentage` | 60% 노랑 / 85% 빨강 |
 | 비용 | `cost.total_cost_usd` | $20 노랑 / $50 빨강 |
@@ -127,6 +127,8 @@ exec env -u NODE_OPTIONS node "$dir/hud.mjs"
 임계값은 `bin/hud.mjs` 상단 `CONFIG` 에서 조정해요.
 
 추론 노력(`high` 같은 것)은 모델명 바로 뒤에 붙어요. Claude Code 가 **effort 를 지원하는 모델일 때만** 이 값을 보내기 때문에, 지원하지 않는 모델에서는 모델명만 보여요. `/effort` 로 바꾸면 다음 렌더에 바로 반영돼요.
+
+색은 낮을수록 흐리고 높을수록 진해져요. **노랑·빨강은 일부러 안 썼어요** — 그 둘은 이미 "한도에 가까움" 경고 색이라, `high` 가 노랗게 보이면 경고로 읽히거든요. 처음 보는 값이 오면 `high` 와 같은 청록으로 그려요.
 
 실행 경로는 홈 아래면 `~` 로 줄여요(`$HOME` 이 없으면 절대 경로 그대로). **파일시스템을 확인하지 않는 순수 문자열 변환이라서, 경로가 실제로 없어도 그려져요** — `branch:` 와 갈리는 지점이에요. 상태줄이 알려주려는 건 "어디서 돌고 있다고 보고받았는가" 이지, 그 경로가 지금 존재하는지가 아니에요.
 

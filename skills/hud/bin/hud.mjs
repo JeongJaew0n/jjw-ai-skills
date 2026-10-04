@@ -43,6 +43,21 @@ const red = wrap(31);
 const green = wrap(32);
 const yellow = wrap(33);
 const cyan = wrap(36);
+const magenta = wrap(35);
+
+/**
+ * 추론 노력 수준별 색. 낮을수록 흐리게, 높을수록 진하게 — 한눈에 "지금 얼마나 세게 돌고 있나" 가 보이게.
+ * 노랑·빨강은 일부러 쓰지 않는다. 그 둘은 이미 "한도에 가까움" 경고 색이라, high 를 노랗게 하면 경고로 읽힌다.
+ * 모르는 값이 오면 high 와 같은 청록으로 그린다 — 빠뜨리지 않고 보여주는 편이 낫다.
+ */
+const EFFORT_COLOR = {
+  low: dim,
+  medium: (s) => String(s),
+  high: cyan,
+  xhigh: magenta,
+  max: (s) => bold(magenta(s)),
+};
+const effortColor = (level) => EFFORT_COLOR[level] ?? cyan;
 
 /** 값이 임계값을 넘는 정도에 따라 색을 고른다 */
 function byThreshold(value, warn, crit) {
@@ -208,13 +223,12 @@ function render(d) {
   // 2행: 지표
   const main = [];
 
-  // 모델
   // 모델 + 추론 노력(effort). effort 는 지원하는 모델일 때만 페이로드에 온다
   // (`low | medium | high | xhigh | max`). 모델에 딸린 속성이라 구분자 없이 바로 붙인다
   const model = d?.model?.display_name;
   const effort = d?.effort?.level;
-  if (model) main.push(bold(model) + (effort ? " " + cyan(effort) : ""));
-  else if (effort) main.push(cyan(effort));
+  if (model) main.push(bold(model) + (effort ? " " + effortColor(effort)(effort) : ""));
+  else if (effort) main.push(effortColor(effort)(effort));
 
   // 컨텍스트 사용률
   const ctx = d?.context_window?.used_percentage;
