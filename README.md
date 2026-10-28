@@ -58,6 +58,12 @@ cd jjw-ai-skills
 | [cmux-where](skills/cmux-where/) | "왼쪽 터미널", "아래 창" 이 실제로 어디인지 화면 좌표로 알아냅니다. 유일하게 알아서 불리는 스킬 |
 | [cmux-appearance](skills/cmux-appearance/) | 지금 쓰는 색감·글꼴 설정을 기록해 둔 곳. 설정이 날아갔거나 다른 컴퓨터에서 같은 화면을 만들 때 되돌립니다 |
 
+### 폰에서 열기 (Tailscale·홈 서버)
+
+| 스킬 | 언제 쓰나 |
+|---|---|
+| [tailnet-home](skills/tailnet-home/) | 만든 웹앱을 폰에서 열고 싶을 때. 홈 서버에 올리고 폰 쪽 주소로 실제로 열리는지까지 확인합니다. Tailscale 상태도 한 번에 보여줘요 |
+
 ### 플러그인·확장 프로그램 만들기
 
 | 스킬 | 언제 쓰나 |
