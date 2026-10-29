@@ -7,6 +7,7 @@
   status   Tailscale·serve·앱 상태 (변경 없음)
   check    앱 하나가 로컬과 tailnet 양쪽에서 열리는지 (변경 없음)
   add      apps.json 에 앱 추가 (백업 → 원자적 교체 → JSON 검증 → check)
+           정적 폴더(--root), 이 맥의 로컬 서버로 넘기기(--proxy), 링크(--url) 중 하나
   remove   apps.json 에서 앱 제거 (백업 → 원자적 교체 → JSON 검증)
 
 tailscale 명령 중계는 일부러 두지 않았다. 필요한 상태는 status 가 다 보여 준다.
@@ -22,6 +23,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import urllib.parse
 import urllib.error
 import urllib.request
 
@@ -153,7 +155,7 @@ def cmd_status(args):
     print('앱:')
     for a in d.get('apps', []):
         state = '켜짐' if a.get('enabled') else '꺼짐'
-        where = a.get('root') or a.get('url')
+        where = a.get('root') or a.get('url') or (f"proxy {a['proxy']}" if a.get('proxy') else '?')
         print(f"  [{state}] {a['id']}  {a.get('title')}  {base}{a.get('href')}  ← {where}")
     print(f'홈: {base}/  (맥에서는 {LOCAL}/)')
     return 0
@@ -179,6 +181,13 @@ def cmd_check(args):
     if a.get('url') and not a.get('root'):
         print(f"링크형 앱이라 홈 서버가 서빙하지 않아: {a['url']}")
         return 0
+
+    if a.get('proxy') and not a.get('root'):
+        target = a['proxy'].rstrip('/') + '/'
+        pcode, pbody = fetch(target)
+        print(f"앱 서버 {target}  → {pcode or pbody}")
+        if pcode is None:
+            print('! 앱 서버가 안 떠 있어. 홈을 거치면 502 야. 앱 서버를 띄우고(LaunchAgent 등) 다시 check 해.')
 
     path = f'/apps/{args.id}/'
     code, body = fetch(LOCAL + path)
@@ -277,11 +286,24 @@ def parse_thumb(spec, root):
     return {'image': image, 'x': x, 'y': y, 'w': w, 'h': h}
 
 
+def check_proxy(url):
+    """홈 서버가 받아 주는 proxy 주소인지: 이 맥(127.0.0.1/localhost)의 http, 포트 있음, 경로·쿼리 없음."""
+    u = urllib.parse.urlsplit(url)
+    try:
+        port = u.port
+    except ValueError:
+        port = None
+    if u.scheme != 'http' or u.hostname not in ('127.0.0.1', 'localhost') or not port \
+            or u.path not in ('', '/') or u.query:
+        fail('--proxy 는 http://127.0.0.1:<포트> 형식만 돼 (이 맥의 로컬 서버, 경로 없이)')
+    return f'http://{u.hostname}:{port}'
+
+
 def cmd_add(args):
     if not re.fullmatch(r'[a-z0-9]+(?:-[a-z0-9]+)*', args.id):
         fail('id 는 소문자 kebab-case 여야 해 (예: gisa-dojo)')
-    if bool(args.root) == bool(args.url):
-        fail('--root 와 --url 중 하나만 줘')
+    if sum(bool(x) for x in (args.root, args.url, args.proxy)) != 1:
+        fail('--root, --proxy, --url 중 하나만 줘')
     data = load_apps()
     apps = data.setdefault('apps', [])
     existing = [a for a in apps if a.get('id') == args.id]
@@ -310,6 +332,13 @@ def cmd_add(args):
         entry['root'] = root
         if args.thumb:
             entry['thumb'] = parse_thumb(args.thumb, root)
+    elif args.proxy:
+        entry['proxy'] = check_proxy(args.proxy)
+        code, _ = fetch(entry['proxy'] + '/')
+        if code is None:
+            print(f"! {entry['proxy']} 에 앱 서버가 안 떠 있어. 등록은 하지만 띄우기 전까지 502 야.")
+        print('프록시 앱이야. tailnet 의 요청이 앱 서버로 그대로 가 (POST·PUT·DELETE 포함).')
+        print('  쓰기 요청 보호(CSRF·권한)는 앱이 직접 해야 하고, 앱 서버는 맥이 켜져 있는 동안 계속 떠 있어야 해.')
     else:
         if not re.match(r'https?://', args.url):
             fail('--url 은 http(s):// 로 시작해야 해')
@@ -326,7 +355,7 @@ def cmd_add(args):
         apps.append(entry)
     write_apps(data)
     print(f"{'바꿈' if existing else '추가'}: {args.id}  (백업 {saved})")
-    if entry.get('root'):
+    if entry.get('root') or entry.get('proxy'):
         print()
         return cmd_check(argparse.Namespace(id=args.id))
     return 0
@@ -358,6 +387,7 @@ def main():
     p.add_argument('--summary')
     p.add_argument('--root')
     p.add_argument('--url')
+    p.add_argument('--proxy', help='http://127.0.0.1:<포트> — 이 맥의 로컬 서버로 넘김')
     p.add_argument('--thumb', help='이미지:x,y,w,h (root 기준)')
     p.add_argument('--replace', action='store_true')
     p.add_argument('--allow-repo-root', action='store_true')
