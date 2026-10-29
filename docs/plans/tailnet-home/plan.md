@@ -95,3 +95,8 @@ tailscale 명령 중계(`ts`)는 두지 않는다. 필요한 정보는 `status` 
 ## 리뷰 반영 (2026-10-29, jjw-ai-skills 세션)
 
 공개 저장소 하드코딩 제거, root 절대 realpath 저장, `ts` 중계 삭제, root 금지 규칙 정리와 `--allow-repo-root`, 비밀 파일 재귀 검사·공개 크기 출력, `state.json` disabled 경고, 절대경로 검사 범위, 백업 폴더·개수 제한, README 새 묶음. 8개 모두 반영.
+
+## 호출 정책 변경 (2026-10-29, 사용자 결정)
+
+다른 세션에서 "테일넷 스킬 참조해" 처럼 말로 부를 수 있게 `disable-model-invocation: false` 로 바꾸고 AGENTS.md 자동 호출 예외 표에 등록했다.
+읽기 전용 조건은 만족하지 않으므로 범위를 좁혔다: 자동 호출로 바로 하는 건 `status`·`check` 까지, `add` 는 사용자가 올려 달라고 직접 말했을 때만, `remove`·`--replace` 는 확인 후.

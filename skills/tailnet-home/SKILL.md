@@ -4,10 +4,14 @@ description: |
   이 맥의 Tailscale(userspace 로 도는 tailscaled)과 홈 서버 상태를 보여주고, 만든 정적
   웹앱을 홈 서버에 올려 같은 tailnet 의 폰에서 `/apps/<id>/` 로 열리게 한다. 올린 뒤
   로컬과 tailnet 양쪽에서 실제로 열리는지 확인한다.
-  사용자가 `/tailnet-home` 또는 `$tailnet-home` 을 명시적으로 호출했을 때만 사용한다.
-  요청 내용이 관련 분야에 해당한다는 이유만으로 자동 사용하지 않는다.
+  다음 상황에서 사용한다 — 사용자가 `/tailnet-home` 으로 부를 때; Tailscale·테일넷·
+  tailnet-home 스킬을 이름으로 언급할 때 ("테일넷 스킬 참조해"); 만든 웹앱을 폰에서
+  열게 해 달라거나 홈(홈 화면·홈 서버)에 올려 달라고 할 때; 이 맥의 Tailscale 상태·
+  폰 접속 주소를 물을 때.
+  일반 네트워크·VPN 질문, 다른 서버나 클라우드로의 배포, Tailscale 설치·로그인·설정
+  변경에는 사용하지 않는다.
 user-invocable: true
-disable-model-invocation: true
+disable-model-invocation: false
 argument-hint: "[status | add <폴더> | check <id> | remove <id>]"
 allowed-tools:
   - Bash
@@ -40,7 +44,10 @@ $H remove <id>
 
 ## 타협 불가 가드레일
 
-- **`/tailnet-home` 이나 `$tailnet-home` 호출에만 반응해.** 이름만 나온 건 호출이 아니야.
+- **알아서 불렸으면 읽기만 해도 되는 것과 아닌 걸 나눠.** (자동 호출 예외 범위, AGENTS.md)
+  - `status`, `check` 는 읽기만 해. 필요하면 바로 돌려.
+  - `add` 는 사용자가 **올려 달라고 직접 말했을 때만** 해 ("폰에서 열리게 해줘", "홈에 올려줘"). 상태를 물었거나 스킬을 참조하라고만 했으면 올리지 말고, 어떤 폴더를 어떤 id 로 올릴지 제안만 해.
+  - `remove` 와 `add --replace` 는 대상 id 를 말하고 **확인받은 뒤에** 해.
 - Tailscale 상태는 **`tailnet-home.py status` 로만 봐.** `tailscale` CLI 를 직접 부르지 마.
 - 아래는 하지 마. 사용자가 원하면 명령을 알려 주고 직접 하게 해.
   - `tailscale logout`, `down`, `up`(옵션 바꾸기 포함), `set`(`--webclient`, `--shields-up` 등), `cert`
@@ -94,4 +101,4 @@ $H remove <id>
 
 - 정적 파일만 올릴 수 있어. API 서버나 개발 서버를 폰에 프록시하는 기능은 홈 서버에 없어.
 - HTTP 야. HTTPS 는 관리 콘솔에서 사람이 켜야 해.
-- 다른 세션이 Tailscale 을 알아서 쓰지는 않아. `/tailnet-home` 을 불러야 해.
+- 알아서 불려도 앱을 올리는 건 사용자가 직접 말했을 때만이야.
