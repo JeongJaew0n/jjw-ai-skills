@@ -606,7 +606,7 @@ def cmd_ui(args):
         for n in nodes:
             flags = "".join(c for c, on in (("C", n["clickable"]), ("✓", n["checked"])) if on)
             print(f"{n['center'][0]:5d} {n['center'][1]:5d}  {flags:2s} {n['text'] or '(' + n['desc'] + ')'}")
-    print("※ 덤프는 화면에 이미 없는 노드를 담고 있을 수 있어요. 보이는지는 스크린샷 픽셀로 판정하세요.",
+    print("※ 덤프는 화면에 이미 없는 노드를 담고 있을 수 있어요. 그러면 그 아래 좌표도 밀려 있어요. 보이는지와 누를 좌표는 스크린샷으로 확인하세요.",
           file=sys.stderr)
     if args.find and not nodes:
         sys.exit(EXIT_ERROR)
