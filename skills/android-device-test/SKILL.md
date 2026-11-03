@@ -54,7 +54,7 @@ $D swipe x1 y1 x2 y2 ms --package <pkg>
 | 언제 | 해도 되는 것 |
 |---|---|
 | 알아서 불렸을 때 | references 읽기, `devices`, `state` |
-| 사용자가 기기를 보라고 했을 때 ("확인해 봐", "화면 어때") | 위 + `shot`·`px`·`stats`·`crop`·`ui`·`datastore`·`snapshot`·`diff`. 화면 내용과 앱 데이터를 가져오는 일이라 요청이 있어야 해 |
+| 사용자가 기기를 보라고 했을 때 ("확인해 봐", "화면 어때") | 위 + `shot`·`px`·`stats`·`crop`·`ui`·`datastore`·`snapshot`·`diff`. 화면 내용과 앱 데이터를 가져오는 일이라 요청이 있어야 해. `ui` 는 덤프하는 몇 초 동안 접근성 서비스(TalkBack 포함)를 꺼 — 사용자가 TalkBack 을 쓰는 중이면 먼저 말해 |
 | 사용자가 기기 테스트를 직접 시켰을 때 | 위 + `tap`·`swipe`·`input`, `restore --yes`, 테스트 대상 앱의 `adb install -r`·`am start`·`am force-stop`, `settings put`(**snapshot 이 기록하는 키만**), 테스트 대상 앱의 `pm grant`/`revoke`·`appops set` |
 | 확인받은 뒤에만 | `pm clear`, `uninstall`, 앱 데이터 삭제, `install -d`(다운그레이드)·`install -g`(모든 권한), 다른 앱 `force-stop`, snapshot 밖의 `settings put`, 기기 언어 변경, 무선 adb 페어링·`adb connect`·`adb tcpip`, 재부팅, 화면을 잠그는 동작 |
 | 하지 마 | `adb kill-server`. 같은 adb 서버를 쓰는 다른 세션의 작업까지 끊어. 필요하면 명령만 알려 주고 사용자가 하게 해 |
@@ -74,7 +74,7 @@ $D swipe x1 y1 x2 y2 ms --package <pkg>
 2. `state --package <pkg>` → 잠금·화면 상태, 최상단 앱, 회전이 0(세로)인지.
 3. `snapshot --package <pkg>` → 스냅샷 경로를 기억해 둬.
 4. 앱의 저장된 설정을 읽어(`datastore <pkg>`). 테스트에 영향을 주거나 사용자 상태를 바꾸는 옵션이 있는지 봐.
-5. 조작: `ui --find`/`--switch-near` 로 좌표를 찾고 `tap --package`. **누를 때마다 다시 덤프해.** 하나를 바꾸면 목록이 접히거나 밀려서 다음 좌표가 틀려. 누르기 전에 `shot` 으로 그 좌표에 그 요소가 있는지 확인해. 화면에 없는 노드가 덤프에 남아 있으면 그 아래 좌표가 통째로 밀려 있어.
+5. 조작: `ui --find`/`--switch-near` 로 좌표를 찾고 `tap --package`. **누를 때마다 다시 덤프해.** 하나를 바꾸면 목록이 접히거나 밀려서 다음 좌표가 틀려. 누르기 전에 `shot` 으로 그 좌표에 그 요소가 있는지 확인해. uiautomator 는 덤프하는 동안 접근성 서비스를 꺼서, 그 서비스에 따라 화면이 바뀌는 앱이면 덤프 좌표가 실제 화면과 통째로 달라.
 6. 판정: 아래 표대로.
 7. `restore <snapshot> --yes` → `diff <snapshot>` 가 "스냅샷과 같습니다" 인지.
 8. 보고할 때 **무엇으로 확인했는지**를 같이 말해(픽셀인지, 창 목록인지, 사람 눈이 필요한지).
@@ -83,7 +83,8 @@ $D swipe x1 y1 x2 y2 ms --package <pkg>
 
 | 확인할 것 | 방법 | 쓰면 안 되는 것 |
 |---|---|---|
-| 화면에 보이나 | `shot` → `px`·`stats` (픽셀) | uiautomator 덤프 — 이미 사라진 노드가 남아 있어 |
+| 화면에 보이나 | `shot` → `px`·`stats` (픽셀) | uiautomator 덤프 — 덤프하는 동안 접근성 서비스가 꺼져 화면이 바뀔 수 있어 |
+| 앱이 받는 접근성 이벤트 | 시험 빌드에서 그 서비스의 `onAccessibilityEvent` 를 로그로 | `uiautomator events` — 붙어 있는 내내 대상 서비스가 꺼져 |
 | 순수 검정인가 | `stats --rect ...` 의 `bright` 가 0 | 평균 밝기 |
 | 위치가 옮겨 갔나 | 두 장의 `stats` 무게중심 차이 | 눈대중 |
 | 서서히 변하나(페이드) | 고대비 지점 하나의 `px` | 평균 밝기 — 배경이 어두우면 안 움직여 |
@@ -128,6 +129,7 @@ USB 를 빼야 하고, 카운터 눈금 때문에 조건당 30분이 필요해.
 |---|---|
 | `TYPE_APPLICATION_OVERLAY` 창이 상태바·내비바를 못 덮음 | `overlay-window-cannot-cover-status-bar.md` |
 | 재설치·force-stop 뒤 접근성 서비스가 조용히 꺼짐 | `accessibility-service-silently-disabled-by-reinstall.md` |
+| uiautomator 덤프에 화면에 없는 UI 가 있음 · 덤프하는 동안 접근성 서비스가 빠짐 | `uiautomator-dump-shows-ui-not-on-screen.md` |
 | adb 로 비공개 서비스 시작 시 `Requires permission not exported` | `adb-cannot-start-non-exported-service.md` |
 | 무선 adb `Connection refused` (폰이 잠든 뒤) | `adb-wireless-connection-refused-after-phone-sleeps.md` |
 | 생체 인증만 허용한 해제 수단에 갇힘 | `biometric-only-unlock-locks-user-out.md` |

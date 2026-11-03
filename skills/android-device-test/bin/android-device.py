@@ -573,11 +573,16 @@ def ui_nodes(xml):
 
 
 def cmd_ui(args):
+    a11y = []
     if args.local:
         with open(args.local, encoding="utf-8") as f:
             xml = f.read()
     else:
-        xml = ui_dump(pick_device(args.serial))
+        dev = pick_device(args.serial)
+        # uiautomator 는 붙어 있는 동안 다른 접근성 서비스를 끈다(suppress). 켜진 게 있으면 덤프가 바뀐 화면을 담을 수 있다.
+        a11y = [s for s in dev.sh("settings get secure enabled_accessibility_services").strip().split(":")
+                if s and s != "null"]
+        xml = ui_dump(dev)
     if args.save:
         args.save = out_path(args.save, ".xml", args.in_repo)
         with open(args.save, "w", encoding="utf-8") as f:
@@ -606,8 +611,14 @@ def cmd_ui(args):
         for n in nodes:
             flags = "".join(c for c, on in (("C", n["clickable"]), ("✓", n["checked"])) if on)
             print(f"{n['center'][0]:5d} {n['center'][1]:5d}  {flags:2s} {n['text'] or '(' + n['desc'] + ')'}")
-    print("※ 덤프는 화면에 이미 없는 노드를 담고 있을 수 있어요. 그러면 그 아래 좌표도 밀려 있어요. 보이는지와 누를 좌표는 스크린샷으로 확인하세요.",
-          file=sys.stderr)
+    # 덤프 직전에 가드를 통과해도 덤프 사이에 사용자가 앱을 바꾸면 그 앱이 담긴다.
+    pkgs = re.findall(r'package="([^"]+)"', xml)
+    if pkgs:
+        print(f"※ 덤프에 담긴 앱: {max(set(pkgs), key=pkgs.count)}", file=sys.stderr)
+    if a11y:
+        print(f"※ 켜진 접근성 서비스 {len(a11y)}개가 덤프하는 동안 잠시 꺼졌어요(uiautomator 기본 동작). 그 서비스에 따라 "
+              "화면이 바뀌는 앱이면 덤프는 바뀐 화면과 좌표를 담고 있어요.", file=sys.stderr)
+    print("※ 보이는지와 누를 좌표는 스크린샷으로 확인하세요. 덤프에는 화면에 없는 노드가 있을 수 있어요.", file=sys.stderr)
     if args.find and not nodes:
         sys.exit(EXIT_ERROR)
 
