@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S python3 -I
 """tailnet-home — 이 맥의 Tailscale·홈 서버 상태를 보고, 정적 웹앱을 홈 서버에 올린다.
 
 전제: tailscaled 가 sudo 없이 userspace 로 돌고, 홈 서버가 tailscale serve 뒤에서
@@ -15,6 +15,7 @@ tailscale 명령 중계는 일부러 두지 않았다. 필요한 상태는 statu
 
 import argparse
 import datetime
+import fcntl
 import fnmatch
 import json
 import os
@@ -31,17 +32,21 @@ import urllib.request
 HOME_DIR = os.path.expanduser(os.environ.get('TAILNET_HOME_DIR', '~/my/Dev/home'))
 PORT = int(os.environ.get('TAILNET_HOME_PORT', '8700'))
 SOCKET = os.path.expanduser(os.environ.get('TAILSCALE_SOCKET', '~/.local/share/tailscale/tailscaled.sock'))
-PROXY = os.environ.get('TAILSCALE_PROXY', '127.0.0.1:1055')
+PROXY = os.environ.get('TAILSCALE_PROXY', '[::1]:1055')     # tailscaled 프록시. 127.0.0.1이면 tailnet에서도 닿아서 ::1로 옮김
 
 APPS = os.path.join(HOME_DIR, 'apps.json')
 STATE = os.path.join(HOME_DIR, 'state.json')
 BACKUPS = os.path.join(HOME_DIR, 'backups')
 KEEP_BACKUPS = 10
-LOCAL = f'http://127.0.0.1:{PORT}'
+LOCAL = f'http://localhost:{PORT}'   # 홈은 [::1]에서만 듣는다(127.0.0.1은 tailnet에서 닿아서 비워 둠)
 
 # root 로 등록하면 너무 넓게 공개되는 곳 (같거나 그 조상이면 거부)
 TOO_WIDE = ['/', '~', '~/my', '~/my/Dev']
-DENY_FILES = ['*.key', '*.pem', '*.p12', 'id_rsa*', 'id_ed25519*', 'secrets*', 'credentials*']
+# 홈 공유의 숨김 규칙(home/shares.py SECRET_NAMES)과 같은 것 + secrets*는 더 넓게(공개 앱에 올리는 쪽이라)
+DENY_FILES = ['*.key', '*.pem', '*.p12', '*.pfx', '*.jks', '*.keystore', '*.kdbx', '*.mobileprovision',
+              'id_rsa*', 'id_ed25519*', 'id_ecdsa*', 'id_dsa*', 'secrets*', 'secret.json', 'credentials*',
+              'client_secret*.json', 'service-account*.json', 'service_account*.json', 'token.json', 'token.pickle',
+              'local.properties', 'google-services.json', 'googleservice-info.plist']
 WARN_FILES = ['.env*']
 SCAN_LIMIT = 20000
 
@@ -274,6 +279,17 @@ def write_apps(data):
     load_apps()  # 다시 읽어 JSON 이 깨지지 않았는지 확인
 
 
+class apps_lock:
+    """홈 서버("홈에 올리기")와 같은 잠금 파일. 둘이 동시에 쓰면 한쪽 변경이 사라지기 때문."""
+    def __enter__(self):
+        self.f = open(os.path.join(HOME_DIR, '.apps.json.lock'), 'w')
+        fcntl.flock(self.f, fcntl.LOCK_EX)
+
+    def __exit__(self, *exc):
+        fcntl.flock(self.f, fcntl.LOCK_UN)
+        self.f.close()
+
+
 def parse_thumb(spec, root):
     m = re.fullmatch(r'(.+):(\d+),(\d+),(\d+),(\d+)', spec)
     if not m:
@@ -287,16 +303,20 @@ def parse_thumb(spec, root):
 
 
 def check_proxy(url):
-    """홈 서버가 받아 주는 proxy 주소인지: 이 맥(127.0.0.1/localhost)의 http, 포트 있음, 경로·쿼리 없음."""
+    """홈 서버가 받아 주는 proxy 주소인지: 이 맥([::1]/127.0.0.1/localhost)의 http, 포트 있음, 경로·쿼리 없음,
+    홈 자신과 tailscaled 프록시는 아님."""
     u = urllib.parse.urlsplit(url)
     try:
         port = u.port
     except ValueError:
         port = None
-    if u.scheme != 'http' or u.hostname not in ('127.0.0.1', 'localhost') or not port \
+    if u.scheme != 'http' or u.hostname not in ('::1', '127.0.0.1', 'localhost') or not port or port in (PORT, 1055) \
             or u.path not in ('', '/') or u.query:
-        fail('--proxy 는 http://127.0.0.1:<포트> 형식만 돼 (이 맥의 로컬 서버, 경로 없이)')
-    return f'http://{u.hostname}:{port}'
+        fail('--proxy 는 http://[::1]:<포트> 형식만 돼 (이 맥의 로컬 서버, 경로 없이, 홈 자신 말고)')
+    if u.hostname != '::1':
+        print('! 앱 서버가 127.0.0.1 에서 들으면 tailnet 기기가 홈을 거치지 않고 바로 들어와 (userspace tailscaled 가 '
+              'tailnet 연결을 127.0.0.1 로 넘겨, 앱 끄기도 안 먹음). ::1 에서만 듣게 하고 --proxy http://[::1]:<포트> 를 권해.')
+    return f'http://[::1]:{port}' if u.hostname == '::1' else f'http://{u.hostname}:{port}'
 
 
 def cmd_add(args):
@@ -309,6 +329,8 @@ def cmd_add(args):
     existing = [a for a in apps if a.get('id') == args.id]
     if existing and not args.replace:
         fail(f'{args.id} 가 이미 있어. 바꾸려면 --replace')
+    if existing and not args.yes:
+        fail(f'{args.id} 를 바꿔. 사용자에게 확인받았으면 --yes 를 붙여 다시 실행해', code=2)
 
     entry = {'id': args.id, 'title': args.title, 'summary': args.summary or ''}
     if args.root:
@@ -324,6 +346,8 @@ def cmd_add(args):
             fail(f'{root} 는 저장소 최상위야 (.git). src/·설정까지 공개돼. '
                  '빌드 결과 폴더(dist/ 등)를 쓰거나, 이 폴더가 곧 정적 사이트이고 비밀이 없으면 --allow-repo-root')
         count, size, deny, warn, capped = scan(root)
+        if capped:
+            fail(f'파일이 {SCAN_LIMIT}개를 넘어 비밀 파일 검사를 끝까지 못 했어. 빌드 결과 폴더처럼 더 좁은 폴더를 골라')
         if deny:
             fail('비밀일 수 있는 파일이 있어서 거부했어:\n  ' + '\n  '.join(deny[:20]))
         for w in warn:
@@ -348,12 +372,18 @@ def cmd_add(args):
     if args.id in disabled_ids():
         print(f'! {args.id} 는 홈에서 꺼진 기록이 있어 (state.json). 홈 화면 스위치로 켜야 열려.')
 
-    saved = backup()
-    if existing:
-        apps[apps.index(existing[0])] = entry
-    else:
-        apps.append(entry)
-    write_apps(data)
+    with apps_lock():
+        data = load_apps()                       # 다시 읽음: 그 사이 홈에서 올린 앱을 지우지 않게
+        apps = data.setdefault('apps', [])
+        existing = [a for a in apps if a.get('id') == args.id]
+        if existing and not args.replace:
+            fail(f'{args.id} 가 이미 있어. 바꾸려면 --replace')
+        saved = backup()
+        if existing:
+            apps[apps.index(existing[0])] = entry
+        else:
+            apps.append(entry)
+        write_apps(data)
     print(f"{'바꿈' if existing else '추가'}: {args.id}  (백업 {saved})")
     if entry.get('root') or entry.get('proxy'):
         print()
@@ -362,14 +392,17 @@ def cmd_add(args):
 
 
 def cmd_remove(args):
-    data = load_apps()
-    apps = data.get('apps', [])
-    left = [a for a in apps if a.get('id') != args.id]
-    if len(left) == len(apps):
-        fail(f'apps.json 에 {args.id} 가 없어')
-    saved = backup()
-    data['apps'] = left
-    write_apps(data)
+    if not args.yes:
+        fail(f'{args.id} 를 홈에서 빼. 사용자에게 확인받았으면 --yes 를 붙여 다시 실행해', code=2)
+    with apps_lock():
+        data = load_apps()
+        apps = data.get('apps', [])
+        left = [a for a in apps if a.get('id') != args.id]
+        if len(left) == len(apps):
+            fail(f'apps.json 에 {args.id} 가 없어')
+        saved = backup()
+        data['apps'] = left
+        write_apps(data)
     print(f'제거: {args.id}  (백업 {saved})')
     return 0
 
@@ -387,12 +420,14 @@ def main():
     p.add_argument('--summary')
     p.add_argument('--root')
     p.add_argument('--url')
-    p.add_argument('--proxy', help='http://127.0.0.1:<포트> — 이 맥의 로컬 서버로 넘김')
+    p.add_argument('--proxy', help='http://[::1]:<포트> — 이 맥의 로컬 서버로 넘김')
     p.add_argument('--thumb', help='이미지:x,y,w,h (root 기준)')
     p.add_argument('--replace', action='store_true')
+    p.add_argument('--yes', action='store_true', help='--replace 를 사용자에게 확인받았음')
     p.add_argument('--allow-repo-root', action='store_true')
     p = sub.add_parser('remove', help='apps.json 에서 앱 제거')
     p.add_argument('id')
+    p.add_argument('--yes', action='store_true', help='사용자에게 확인받았음')
     args = ap.parse_args()
     if not os.path.isfile(APPS) and args.cmd != 'status':
         fail(f'홈 서버 apps.json 이 없어: {APPS} (TAILNET_HOME_DIR 확인)')
