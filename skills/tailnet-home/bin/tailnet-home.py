@@ -161,6 +161,8 @@ def cmd_status(args):
     for a in d.get('apps', []):
         state = '켜짐' if a.get('enabled') else '꺼짐'
         where = a.get('root') or a.get('url') or (f"proxy {a['proxy']}" if a.get('proxy') else '?')
+        if a.get('service'):
+            where += f"  · 서버 {a['service']}"
         print(f"  [{state}] {a['id']}  {a.get('title')}  {base}{a.get('href')}  ← {where}")
     print(f'홈: {base}/  (맥에서는 {LOCAL}/)')
     return 0
@@ -319,11 +321,27 @@ def check_proxy(url):
     return f'http://[::1]:{port}' if u.hostname == '::1' else f'http://{u.hostname}:{port}'
 
 
+SERVICE_NEVER = {'com.jjw.home', 'com.jjw.tailscaled-userspace', 'com.jjw.taildrop-inbox'}
+
+
+def check_service(label):
+    """홈 스위치가 같이 켜고 끌 LaunchAgent 인지: com.jjw.*, ~/Library/LaunchAgents 에 plist 있음, 홈·tailscaled·
+    Taildrop 받은 편지함은 아님 (홈 서버 server.py 의 service_of 와 같은 규칙)."""
+    if not re.fullmatch(r'com\.jjw\.[a-z0-9]+(?:[.-][a-z0-9]+)*', label) or label in SERVICE_NEVER:
+        fail('--service 는 앱 서버의 LaunchAgent 이름(com.jjw.*)만 돼. 홈·tailscaled·taildrop-inbox 는 안 돼')
+    plist = os.path.expanduser(f'~/Library/LaunchAgents/{label}.plist')
+    if not os.path.isfile(plist):
+        fail(f'{plist} 가 없어')
+    return label
+
+
 def cmd_add(args):
     if not re.fullmatch(r'[a-z0-9]+(?:-[a-z0-9]+)*', args.id):
         fail('id 는 소문자 kebab-case 여야 해 (예: gisa-dojo)')
     if sum(bool(x) for x in (args.root, args.url, args.proxy)) != 1:
         fail('--root, --proxy, --url 중 하나만 줘')
+    if args.service and not args.proxy:
+        fail('--service 는 --proxy 앱에만 붙여')
     data = load_apps()
     apps = data.setdefault('apps', [])
     existing = [a for a in apps if a.get('id') == args.id]
@@ -358,6 +376,9 @@ def cmd_add(args):
             entry['thumb'] = parse_thumb(args.thumb, root)
     elif args.proxy:
         entry['proxy'] = check_proxy(args.proxy)
+        if args.service:
+            entry['service'] = check_service(args.service)
+            print(f"홈 스위치가 서버({entry['service']})도 같이 켜고 꺼 (끄면 launchctl disable + bootout, 재시작해도 꺼진 채).")
         code, _ = fetch(entry['proxy'] + '/')
         if code is None:
             print(f"! {entry['proxy']} 에 앱 서버가 안 떠 있어. 등록은 하지만 띄우기 전까지 502 야.")
@@ -421,6 +442,7 @@ def main():
     p.add_argument('--root')
     p.add_argument('--url')
     p.add_argument('--proxy', help='http://[::1]:<포트> — 이 맥의 로컬 서버로 넘김')
+    p.add_argument('--service', help='com.jjw.<이름> — 홈 스위치가 같이 켜고 끌 앱 서버의 LaunchAgent (--proxy 와 함께)')
     p.add_argument('--thumb', help='이미지:x,y,w,h (root 기준)')
     p.add_argument('--replace', action='store_true')
     p.add_argument('--yes', action='store_true', help='--replace 를 사용자에게 확인받았음')

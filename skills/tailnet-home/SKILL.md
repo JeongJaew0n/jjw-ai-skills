@@ -43,6 +43,7 @@ $H status --json          # 다른 처리에 넘길 때
 $H check <id>             # 로컬·tailnet 양쪽에서 열리는지
 $H add --id <id> --title <제목> --summary <한 줄> --root <폴더> [--thumb 이미지:x,y,w,h] [--replace] [--allow-repo-root]
 $H add --id <id> --title <제목> --summary <한 줄> --proxy http://[::1]:<포트>   # 이 맥의 로컬 서버로 넘기기
+$H add ... --proxy http://[::1]:<포트> --service com.jjw.<이름>   # 홈 스위치가 그 LaunchAgent 서버도 같이 켜고 끔
 $H add --id <id> --title <제목> --url <https://...>     # 링크만 거는 앱
 $H remove <id> --yes        # 사용자에게 확인받은 뒤
 ```
@@ -76,7 +77,7 @@ $H remove <id> --yes        # 사용자에게 확인받은 뒤
    - 빌드 도구가 있으면 먼저 빌드하고 결과 폴더를 써. 그 폴더에 `index.html` 이 있어야 해.
    - 앱은 `/apps/<id>/` 아래에서 열려. `/assets/..` 처럼 `/` 로 시작하는 경로는 깨져. 상대경로(`./`)로 만들어. Vite 는 `base: './'`, CRA 는 `"homepage": "."`, Next 정적 export 는 `basePath` 를 `/apps/<id>` 로.
    - 라우터가 있으면 해시 라우팅(`#/`)이 안전해. 서버는 없는 경로에 index.html 을 돌려주지 않아.
-   - 서버가 필요한 앱(API, DB)은 `::1` 에서 듣게 띄우고 `--proxy http://[::1]:<포트>` 로 올려. 앱 서버는 맥이 켜져 있는 동안 계속 떠 있어야 하니까 LaunchAgent 같은 걸로 띄워. 앱도 `/apps/<id>/` 아래에서 열리니 페이지 안 경로는 상대경로로 하거나 `X-Forwarded-Prefix` 를 써.
+   - 서버가 필요한 앱(API, DB)은 `::1` 에서 듣게 띄우고 `--proxy http://[::1]:<포트>` 로 올려. 앱 서버는 맥이 켜져 있는 동안 계속 떠 있어야 하니까 LaunchAgent 같은 걸로 띄워. LaunchAgent(`com.jjw.*`)로 띄웠으면 `--service <라벨>` 을 붙여: 홈 화면 스위치를 끄면 그 서버도 내려가고(`launchctl disable` + `bootout`, 재시작해도 꺼진 채) 켜면 다시 떠. 홈·tailscaled·taildrop-inbox 는 거부돼. 앱도 `/apps/<id>/` 아래에서 열리니 페이지 안 경로는 상대경로로 하거나 `X-Forwarded-Prefix` 를 써.
    - 개발 서버(Vite dev 등)도 proxy 로 넘길 수는 있지만, HMR 웹소켓은 안 넘어가고 서버를 끄면 502 야. 오래 쓸 거면 빌드해서 root 로 올리거나 상시 서버로 띄워.
 3. id 는 소문자 kebab-case 로, 보통 폴더 이름. title·summary 는 홈 화면 카드에 그대로 나와. 한국어로 짧게.
 4. `add` 실행. 출력의 "공개될 파일" 수와 크기, 경고를 사용자에게 그대로 전해.
