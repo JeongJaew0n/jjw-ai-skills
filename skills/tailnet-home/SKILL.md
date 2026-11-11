@@ -40,7 +40,7 @@ proxy 앱은 `/apps/<id>` 를 떼고 메서드·쿼리·본문(1MB까지)·헤�
 H=~/.claude/skills/tailnet-home/bin/tailnet-home.py
 $H status                 # Tailscale·기기·키 만료·serve·앱 목록과 폰 URL
 $H status --json          # 다른 처리에 넘길 때
-$H check <id>             # 로컬·tailnet 양쪽에서 열리는지
+$H check <id>             # 로컬·tailnet 양쪽에서 열리는지, proxy 앱이면 앱 서버가 ::1 에서만 듣는지(lsof, 읽기만)
 $H add --id <id> --title <제목> --summary <한 줄> --root <폴더> [--thumb 이미지:x,y,w,h] [--replace] [--allow-repo-root]
 $H add --id <id> --title <제목> --summary <한 줄> --proxy http://[::1]:<포트>   # 이 맥의 로컬 서버로 넘기기
 $H add ... --proxy http://[::1]:<포트> --service com.jjw.<이름>   # 홈 스위치가 그 LaunchAgent 서버도 같이 켜고 끔
@@ -66,7 +66,8 @@ $H remove <id> --yes        # 사용자에게 확인받은 뒤
 - **root 폴더 안의 파일은 tailnet 의 모든 기기에 공개돼.** 홈 디렉터리나 소스 저장소 최상위를 root 로 잡지 마. 빌드 결과 폴더(`dist/`, `build/`, `out/`)를 써.
   - `--allow-repo-root` 는 저장소 최상위가 곧 정적 사이트이고, `src/`·설정·데이터 중 공개되면 안 되는 게 없는 걸 **직접 확인했을 때만** 써. 확인한 내용을 사용자에게 말해.
   - 스크립트가 비밀 파일 때문에 거부하면 **우회하지 마.** 파일을 옮기거나 다른 폴더를 쓰라고 안내해.
-- proxy 앱은 **tailnet 의 요청이 앱 서버로 그대로 가.** POST·PUT·DELETE 도 가니까 쓰기 요청 보호(CSRF·권한)는 앱이 해야 해. 지우기·관리 같은 위험한 엔드포인트가 있는 서버는 올리기 전에 사용자에게 말해. 대상은 이 맥의 `[::1]`/`127.0.0.1`/`localhost` http 만 돼 (스크립트·서버 둘 다 막아).
+- proxy 앱은 **tailnet 의 요청이 앱 서버로 그대로 가.** POST·PUT·DELETE 도 가니까 쓰기 요청 보호(CSRF·권한)는 앱이 해야 해. 지우기·관리 같은 위험한 엔드포인트가 있는 서버는 올리기 전에 사용자에게 말해. 대상은 이 맥의 `[::1]`/`127.0.0.1`/`localhost` http 만 돼 (스크립트·서버 둘 다 막아). 다만 127.0.0.1 에서 듣는 앱 서버는 `check` 가 경고하고 종료 코드 1 로 끝나(아래 "앱 서버는 ::1 에서만" 이유).
+- **확인용 헤드리스 Chrome 은 `--remote-debugging-pipe` 로, 임시 서버·프록시는 `[::1]` 에서 띄워.** `--remote-debugging-port` 나 127.0.0.1 은 아래와 같은 이유로 tailnet 에서 닿아서, 도는 동안 다른 기기가 그 브라우저·서버를 쓸 수 있어. `bin/phone-check.mjs` 가 파이프 방식 예야.
 - **앱 서버는 `::1` 에서만 듣게 해.** tailscaled 가 userspace 라 tailnet 에서 이 맥 주소의 아무 포트로 온 연결을 `127.0.0.1:<포트>` 로 넘겨. 127.0.0.1 에서 들으면 tailnet 기기가 홈(앱 끄기 포함)을 거치지 않고 바로 들어와. 홈 서버(`[::1]:8700`)와 tailscaled 프록시(`[::1]:1055`)도 같은 이유로 ::1 에서 들어.
 - 맥에서 tailnet URL 을 직접 열어 보고 "안 열린다"고 판단하지 마. tailnet 확인은 `check` 가 프록시로 해.
 
@@ -82,7 +83,8 @@ $H remove <id> --yes        # 사용자에게 확인받은 뒤
 3. id 는 소문자 kebab-case 로, 보통 폴더 이름. title·summary 는 홈 화면 카드에 그대로 나와. 한국어로 짧게.
 4. `add` 실행. 출력의 "공개될 파일" 수와 크기, 경고를 사용자에게 그대로 전해.
 5. `add` 가 이어서 `check` 를 돌려. **로컬·tailnet 둘 다 200 이어야** 올렸다고 말해. 절대경로 경고가 나오면 고치고 다시 `check`.
-6. 사용자에게 알려 줄 것:
+6. `node ~/.claude/skills/tailnet-home/bin/phone-check.mjs <id>` 로 폰 화면(390px, 터치, 밝게·어둡게)을 봐. 누르지 않고, 페이지가 보내는 GET·HEAD·OPTIONS 밖의 요청은 막아(단 GET 으로 상태를 만드는 앱은 못 막아). 가로 넘침·오류·44px 보다 작은 누를 곳·12px 보다 작은 글자·다크 모드 여부를 그대로 전해. 기준과 고치는 법은 `references/app-checklist.md`. 여러 앱을 한꺼번에 점검·리뷰하라고 하면 `references/app-review.md` 절차대로.
+7. 사용자에게 알려 줄 것:
    - 폰 URL (`status` 출력의 앱 줄 그대로)
    - 홈 화면 카드에서도 열린다는 것
    - **같은 tailnet 의 모든 기기에서 열린다**는 것
@@ -109,6 +111,6 @@ $H remove <id> --yes        # 사용자에게 확인받은 뒤
 
 ## 한계
 
-- proxy 는 이 맥의 로컬 http 서버만(`[::1]`에서 들어야 함), 요청 본문 1MB 까지(chunked 요청은 411). 응답은 받는 대로 흘려 보내서 Range·SSE도 되지만 한 응답은 600초까지, 앱이 30초 동안 아무것도 안 보내면 끊겨. 웹소켓은 안 돼.
+- proxy 는 이 맥의 로컬 http 서버만(`[::1]`에서 들어야 함), 요청 본문 1MB 까지(chunked 요청은 411). 응답은 받는 대로 흘려 보내서 Range·SSE도 되지만 한 응답은 600초까지야. 앱이 답을 시작하기까지는 150초를 기다리고(`HOME_PROXY_FIRST_BYTE`), 답이 시작된 뒤 30초 동안 아무것도 안 보내면 끊겨. 웹소켓은 안 돼.
 - HTTP 야. HTTPS 는 관리 콘솔에서 사람이 켜야 해.
 - 알아서 불려도 앱을 올리는 건 사용자가 직접 말했을 때만이야.

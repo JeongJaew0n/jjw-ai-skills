@@ -195,6 +195,11 @@ def cmd_check(args):
         print(f"앱 서버 {target}  → {pcode or pbody}")
         if pcode is None:
             print('! 앱 서버가 안 떠 있어. 홈을 거치면 502 야. 앱 서버를 띄우고(LaunchAgent 등) 다시 check 해.')
+        bare = listening_beside_loopback6(urllib.parse.urlsplit(target).port)
+        if bare:
+            print(f"! 앱 서버가 [::1] 말고 {', '.join(bare)} 에서도 들어. userspace tailscaled 가 tailnet 연결을 127.0.0.1 로 "
+                  f"넘기니 tailnet 기기가 홈(앱 끄기 포함)을 거치지 않고 바로 들어와. 앱 서버를 ::1 에서만 듣게 해.")
+            ok = False
 
     path = f'/apps/{args.id}/'
     code, body = fetch(LOCAL + path)
@@ -302,6 +307,19 @@ def parse_thumb(spec, root):
         fail(f'썸네일 이미지가 root 안에 없어: {image}')
     x, y, w, h = map(int, m.groups()[1:])
     return {'image': image, 'x': x, 'y': y, 'w': w, 'h': h}
+
+
+def listening_beside_loopback6(port):
+    """Addresses other than [::1] that something listens on at this port (127.0.0.1, *, a LAN address). Reads only."""
+    if not port:
+        return []
+    try:
+        out = subprocess.run(['/usr/sbin/lsof', '-nP', f'-iTCP:{port}', '-sTCP:LISTEN', '-Fn'], capture_output=True,
+                             text=True, timeout=5).stdout
+    except (OSError, subprocess.SubprocessError):
+        return []
+    names = {line[1:] for line in out.splitlines() if line.startswith('n')}
+    return sorted(n for n in names if not n.startswith('[::1]:'))
 
 
 def check_proxy(url):
