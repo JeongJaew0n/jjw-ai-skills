@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""scaffold — my-app-init 의 기계적인 부분. 디렉터리 골격과 git 신원을 만든다.
+"""scaffold — jjw-app-init 의 기계적인 부분. 디렉터리 골격과 git 신원을 만든다.
 
 판단이 필요한 일(어떤 계정을 쓸지, 커밋 정책, 브랜치 정책, README/CLAUDE.md 내용)은
 여기서 하지 않는다. 그건 사람에게 묻고 AI 가 쓴다. 이 스크립트는 답이 정해진 뒤의
@@ -270,7 +270,7 @@ def cmd_apply(args):
 
 
 def main():
-    ap = argparse.ArgumentParser(description="my-app-init 의 골격 생성")
+    ap = argparse.ArgumentParser(description="jjw-app-init 의 골격 생성")
     sub = ap.add_subparsers(dest="cmd", required=True)
 
     d = sub.add_parser("detect", help="git 신원 후보 조사 (변경 없음)")

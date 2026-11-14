@@ -1,11 +1,11 @@
 ---
-name: my-app-init
+name: jjw-app-init
 description: |
   새 앱·프로젝트를 시작할 때 매번 반복하는 초기 세팅을 한 번에 끝낸다. git 신원·커밋
   정책·브랜치 정책을 사용자에게 묻고 그 답을 프로젝트에 고정하며, docs/plans 와
   docs/troubleshootings(project-specific · reusable) 골격을 만들고, 프로젝트 설명을
   받아 README.md 와 CLAUDE.md 를 작성한다. 버전은 0.x.x semver 로 고정한다.
-  사용자가 `/my-app-init` 또는 `$my-app-init` 를 명시적으로 호출했을 때만 사용한다.
+  사용자가 `/jjw-app-init` 또는 `$jjw-app-init` 를 명시적으로 호출했을 때만 사용한다.
   프로젝트 시작·초기 설정 요청이 관련 분야에 해당한다는 이유만으로 자동 사용하지 않는다.
 user-invocable: true
 disable-model-invocation: true
@@ -19,11 +19,11 @@ allowed-tools:
   - AskUserQuestion
 ---
 
-# /my-app-init — 새 프로젝트 초기 세팅
+# /jjw-app-init — 새 프로젝트 초기 세팅
 
 ## 활성화 조건
 
-`/my-app-init` 이나 `$my-app-init` 로 불렀을 때만 돌려. 이름만 나온 건 호출이 아니야 — `disable-model-invocation` 이 그 경로를 막으니까, 실행하지 말고 슬래시로 불러달라고 안내해. 프로젝트 시작이나 초기 설정 얘기가 나왔다고 알아서 집어 들지 마.
+`/jjw-app-init` 이나 `$jjw-app-init` 로 불렀을 때만 돌려. 이름만 나온 건 호출이 아니야 — `disable-model-invocation` 이 그 경로를 막으니까, 실행하지 말고 슬래시로 불러달라고 안내해. 프로젝트 시작이나 초기 설정 얘기가 나왔다고 알아서 집어 들지 마.
 
 ## 이 스킬의 핵심
 
@@ -51,6 +51,8 @@ ls -a <경로>
 ```
 
 `CLAUDE.md` 에 결정 블록이 이미 있으면 재실행이야. 현재 값을 보여주고 뭘 바꿀지 물어. 조용히 덮어쓰지 마.
+
+이 스킬의 예전 이름은 `my-app-init` 이야. 그때 만든 프로젝트는 블록 제목이 `## 프로젝트 규칙 (my-app-init, …)` 이고, 이것도 같은 결정 블록이야. 새 블록을 하나 더 넣지 마.
 
 `SKILL_DIR` 은 이 `SKILL.md` 가 있는 디렉터리야.
 
@@ -119,7 +121,7 @@ docs/
 `CLAUDE.md` 에 아래 블록을 넣어. 파일이 이미 있으면 **덮어쓰지 말고 이 블록만 추가**해.
 
 ```markdown
-## 프로젝트 규칙 (my-app-init, YYYY-MM-DD 확정)
+## 프로젝트 규칙 (jjw-app-init, YYYY-MM-DD 확정)
 
 ### git
 - author: `<이름> <<이메일>>` — `git config --local` 로 설정돼 있다. 커밋 전 `git config user.email` 로 확인한다.
@@ -262,7 +264,7 @@ docs/
 ## 구조
 주요 디렉터리와 각각의 책임. 파일이 늘면 갱신한다.
 
-## 프로젝트 규칙 (my-app-init, YYYY-MM-DD 확정)
+## 프로젝트 규칙 (jjw-app-init, YYYY-MM-DD 확정)
 ...
 ```
 
