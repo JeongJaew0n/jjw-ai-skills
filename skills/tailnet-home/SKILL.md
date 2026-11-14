@@ -46,6 +46,7 @@ $H add --id <id> --title <제목> --summary <한 줄> --proxy http://[::1]:<포�
 $H add ... --proxy http://[::1]:<포트> --service com.jjw.<이름>   # 홈 스위치가 그 LaunchAgent 서버도 같이 켜고 끔
 $H add --id <id> --title <제목> --url <https://...>     # 링크만 거는 앱
 $H remove <id> --yes        # 사용자에게 확인받은 뒤
+$H group <id> <work|study|lab|none>   # 홈 화면 영역: 작업실·학습실·연구실 (none 이면 맨 밑 "기타")
 ```
 
 ## 타협 불가 가드레일
@@ -88,6 +89,8 @@ $H remove <id> --yes        # 사용자에게 확인받은 뒤
    - 폰 URL (`status` 출력의 앱 줄 그대로)
    - 홈 화면 카드에서도 열린다는 것
    - **같은 tailnet 의 모든 기기에서 열린다**는 것
+
+홈 화면은 앱을 영역별로 나눠 보여 줘: 작업실(work, 늘 쓰는 도구) → 학습실(study, 개인 공부) → 연구실(lab, 정식 제품이 아닌 연구·데모) → 기타(영역 없음). 올릴 때 `add --group <work|study|lab>` 를 붙이거나 나중에 `group` 으로 정해. 어디에 넣을지 모르겠으면 사용자에게 물어봐. `--replace` 에 `--group` 이 없으면 원래 영역을 그대로 둬. 홈 화면의 "홈에 올리기"로 올린 앱은 영역이 없어서 기타에 나와.
 
 썸네일은 선택이야. root 안의 이미지에서 `x,y,w,h` 영역을 잘라 홈 카드에 2배로 그려. 도트 스프라이트처럼 작은 그림에 어울려.
 

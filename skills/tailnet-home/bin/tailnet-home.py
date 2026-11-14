@@ -9,6 +9,7 @@
   add      apps.json 에 앱 추가 (백업 → 원자적 교체 → JSON 검증 → check)
            정적 폴더(--root), 이 맥의 로컬 서버로 넘기기(--proxy), 링크(--url) 중 하나
   remove   apps.json 에서 앱 제거 (백업 → 원자적 교체 → JSON 검증)
+  group    앱을 홈 화면의 영역(작업실·학습실·연구실)에 넣거나 뺌 (백업 → 원자적 교체 → JSON 검증)
 
 tailscale 명령 중계는 일부러 두지 않았다. 필요한 상태는 status 가 다 보여 준다.
 """
@@ -49,6 +50,8 @@ DENY_FILES = ['*.key', '*.pem', '*.p12', '*.pfx', '*.jks', '*.keystore', '*.kdbx
               'local.properties', 'google-services.json', 'googleservice-info.plist']
 WARN_FILES = ['.env*']
 SCAN_LIMIT = 20000
+# 홈 화면의 영역. 화면에 이 순서로 위에서부터 나오고, 영역이 없는 앱은 맨 밑 "기타"에 (home/web/home.js GROUPS 와 같게)
+GROUPS = {'work': '작업실', 'study': '학습실', 'lab': '연구실'}
 
 
 def fail(msg, code=1):
@@ -163,6 +166,7 @@ def cmd_status(args):
         where = a.get('root') or a.get('url') or (f"proxy {a['proxy']}" if a.get('proxy') else '?')
         if a.get('service'):
             where += f"  · 서버 {a['service']}"
+        where += f"  · {GROUPS.get(a.get('group'), '영역 없음')}"
         print(f"  [{state}] {a['id']}  {a.get('title')}  {base}{a.get('href')}  ← {where}")
     print(f'홈: {base}/  (맥에서는 {LOCAL}/)')
     return 0
@@ -369,6 +373,8 @@ def cmd_add(args):
         fail(f'{args.id} 를 바꿔. 사용자에게 확인받았으면 --yes 를 붙여 다시 실행해', code=2)
 
     entry = {'id': args.id, 'title': args.title, 'summary': args.summary or ''}
+    if args.group:
+        entry['group'] = args.group
     if args.root:
         root = os.path.realpath(os.path.expanduser(args.root))
         if not os.path.isdir(root):
@@ -418,6 +424,8 @@ def cmd_add(args):
         if existing and not args.replace:
             fail(f'{args.id} 가 이미 있어. 바꾸려면 --replace')
         saved = backup()
+        if existing and 'group' not in entry and existing[0].get('group') in GROUPS:
+            entry['group'] = existing[0]['group']    # --replace 에 --group 이 없으면 영역은 그대로
         if existing:
             apps[apps.index(existing[0])] = entry
         else:
@@ -446,6 +454,27 @@ def cmd_remove(args):
     return 0
 
 
+def cmd_group(args):
+    with apps_lock():
+        data = load_apps()
+        found = [a for a in data.get('apps', []) if a.get('id') == args.id]
+        if not found:
+            fail(f'apps.json 에 {args.id} 가 없어')
+        a = found[0]
+        before = GROUPS.get(a.get('group'), '영역 없음')
+        if (a.get('group') if a.get('group') in GROUPS else 'none') == args.group:
+            print(f'{args.id} 는 이미 {before} 이야. 바꾼 것 없음')
+            return 0
+        saved = backup()
+        if args.group == 'none':
+            a.pop('group', None)
+        else:
+            a['group'] = args.group
+        write_apps(data)
+    print(f"{args.id}: {before} → {GROUPS.get(args.group, '영역 없음 (홈 화면 맨 밑 기타)')}  (백업 {saved})")
+    return 0
+
+
 def main():
     ap = argparse.ArgumentParser(prog='tailnet-home', description=__doc__.split('\n')[0])
     sub = ap.add_subparsers(dest='cmd', required=True)
@@ -462,16 +491,20 @@ def main():
     p.add_argument('--proxy', help='http://[::1]:<포트> — 이 맥의 로컬 서버로 넘김')
     p.add_argument('--service', help='com.jjw.<이름> — 홈 스위치가 같이 켜고 끌 앱 서버의 LaunchAgent (--proxy 와 함께)')
     p.add_argument('--thumb', help='이미지:x,y,w,h (root 기준)')
+    p.add_argument('--group', choices=list(GROUPS), help='홈 화면 영역: work 작업실 · study 학습실 · lab 연구실')
     p.add_argument('--replace', action='store_true')
     p.add_argument('--yes', action='store_true', help='--replace 를 사용자에게 확인받았음')
     p.add_argument('--allow-repo-root', action='store_true')
     p = sub.add_parser('remove', help='apps.json 에서 앱 제거')
     p.add_argument('id')
     p.add_argument('--yes', action='store_true', help='사용자에게 확인받았음')
+    p = sub.add_parser('group', help='앱의 홈 화면 영역 바꾸기')
+    p.add_argument('id')
+    p.add_argument('group', choices=[*GROUPS, 'none'], help='work 작업실 · study 학습실 · lab 연구실 · none 빼기')
     args = ap.parse_args()
     if not os.path.isfile(APPS) and args.cmd != 'status':
         fail(f'홈 서버 apps.json 이 없어: {APPS} (TAILNET_HOME_DIR 확인)')
-    return {'status': cmd_status, 'check': cmd_check, 'add': cmd_add, 'remove': cmd_remove}[args.cmd](args)
+    return {'status': cmd_status, 'check': cmd_check, 'add': cmd_add, 'remove': cmd_remove, 'group': cmd_group}[args.cmd](args)
 
 
 if __name__ == '__main__':
