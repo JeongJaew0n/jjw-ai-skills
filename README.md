@@ -25,11 +25,12 @@ cd jjw-ai-skills
 
 - **`/스킬이름`** 또는 **`$스킬이름`** 으로 부릅니다. 예: `/diagnose 저장 버튼 누르면 500 에러`
 - 대부분은 **슬래시로 불러야만** 움직이는 수동 스킬이에요. 이름만 말하면("diagnose 로 봐줘") AI 가 알아서 실행하지 않고, 슬래시로 불러 달라고 안내해요. 무거운 절차가 엉뚱한 때 시작되지 않게 하려는 거예요.
-- 몇 개는 **필요하면 AI 가 알아서 쓰는** 자동 스킬이에요. 지금은 `cmux-where`, `tailnet-home`, `android-device-test` 세 개입니다.
+- 몇 개는 **필요하면 AI 가 알아서 쓰는** 자동 스킬이에요. 지금은 `cmux-where`, `tailnet-home`, `android-device-test`, `jjw-app-init` 네 개입니다.
   - "왼쪽 터미널에 물어봐" 라고 하면 `cmux-where` 로 위치부터 알아내요.
   - "테일넷 스킬 참조해" 라고 하면 `tailnet-home` 을 써요.
   - "폰에서 확인해" 라고 하면 `android-device-test` 의 절차와 함정 목록을 따라요.
-  - 알아서 하는 건 조회·확인까지예요. 무언가를 바꾸는 일(다른 터미널에 입력하기, 앱 올리기, 기기에 탭 보내기)은 직접 요청했거나 확인했을 때만 해요.
+  - "새 프로젝트 만들자" 라고 하면 `jjw-app-init` 이 초기 세팅을 할지와 git·커밋·브랜치 규칙을 먼저 물어요.
+  - 알아서 하는 건 조회·확인까지예요. 무언가를 바꾸는 일(다른 터미널에 입력하기, 앱 올리기, 기기에 탭 보내기, 프로젝트 파일 만들기)은 직접 요청했거나 확인했을 때만 해요.
 - 어떤 스킬을 자동으로 둘지 정하는 기준은 [AGENTS.md](AGENTS.md) 에 있어요.
 
 ## 어떤 스킬이 있나
@@ -40,7 +41,7 @@ cd jjw-ai-skills
 
 | 스킬 | 언제 쓰나 |
 |---|---|
-| [jjw-app-init](skills/jjw-app-init/) | 새 프로젝트를 시작할 때. git 규칙·`docs/` 골격·README·CLAUDE.md 같은 첫 세팅을 물어보며 한 번에 끝냅니다 |
+| [jjw-app-init](skills/jjw-app-init/) | 새 프로젝트를 시작할 때. git 규칙·`docs/` 골격·README·CLAUDE.md 같은 첫 세팅을 물어보며 한 번에 끝냅니다. 새 프로젝트를 만들면 부르지 않아도 먼저 물어봐요 |
 | [ai-interview-tech](skills/ai-interview-tech/) | 기능을 만들기 **전에**. 코드를 근거로 "실패하면 어떻게 하지", "두 번 실행돼도 괜찮나" 같은 숨은 결정을 질문으로 끌어내 함께 정합니다 |
 | [ai-plan-docs](skills/ai-plan-docs/) | 작업 계획을 `docs/plans/` 에 남겨 두고 싶을 때. 다음 세션에서 그대로 이어서 할 수 있습니다 |
 | [review-code-intent](skills/review-code-intent/) | PR 을 리뷰할 때. "왜 만들었나 / 안전한가 / 의도대로 됐나" 세 갈래로 나눠 `docs/reviews/` 에 문서로 남깁니다 |

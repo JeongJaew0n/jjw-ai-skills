@@ -4,4 +4,4 @@ interface:
   default_prompt: "Use $jjw-app-init."
 
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true
