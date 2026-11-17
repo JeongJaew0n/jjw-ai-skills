@@ -394,7 +394,7 @@ def cmd_add(args):
             fail('비밀일 수 있는 파일이 있어서 거부했어:\n  ' + '\n  '.join(deny[:20]))
         for w in warn:
             print(f'! {w} — 점 파일이라 서버가 숨기지만, 정적 사이트에 둘 이유가 있는지 확인해')
-        print(f"공개될 파일: {count}{'개 이상' if capped else '개'}, {human(size)}  (tailnet 의 모든 기기)")
+        print(f"공개될 파일: {count}개, {human(size)}  (tailnet 의 모든 기기)")
         entry['root'] = root
         if args.thumb:
             entry['thumb'] = parse_thumb(args.thumb, root)

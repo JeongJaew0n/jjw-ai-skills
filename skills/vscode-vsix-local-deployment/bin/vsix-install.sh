@@ -80,6 +80,10 @@ resolve_cli() {
 
 CLI="$(resolve_cli)"
 
+# package.json·manifest 검사에 쓰므로 무엇을 읽기 전에 먼저 확인한다. 저장소 대상의 package.json 도 node 로 읽는다.
+command -v node >/dev/null 2>&1 || { echo "VSIX manifest 검사에 Node.js가 필요합니다." >&2; exit 1; }
+command -v unzip >/dev/null 2>&1 || { echo "VSIX manifest 검사에 unzip이 필요합니다." >&2; exit 1; }
+
 if [ -f "$TARGET" ]; then
   case "$TARGET" in
     *.vsix) VSIX="$(cd "$(dirname "$TARGET")" && pwd -P)/$(basename "$TARGET")" ;;
@@ -125,9 +129,6 @@ else
   echo "대상을 찾을 수 없습니다: $TARGET" >&2
   exit 1
 fi
-
-command -v node >/dev/null 2>&1 || { echo "VSIX manifest 검사에 Node.js가 필요합니다." >&2; exit 1; }
-command -v unzip >/dev/null 2>&1 || { echo "VSIX manifest 검사에 unzip이 필요합니다." >&2; exit 1; }
 
 MANIFEST_FILE="$(mktemp "${TMPDIR:-/tmp}/vsix-manifest.XXXXXX")"
 trap 'rm -f "$MANIFEST_FILE"' EXIT HUP INT TERM
@@ -194,7 +195,7 @@ printf '%s\n' "$INSTALLED" | awk -v wanted="$EXTENSION_ID@$EXTENSION_VERSION" '
   tolower($0) == tolower(wanted) { found = 1 }
   END { exit(found ? 0 : 1) }
 ' || {
-  echo "CLI 명령은 끝났지만 설치 목록에서 $EXTENSION_ID@$EXTENSION_VERSION을 확인하지 못했습니다." >&2
+  echo "CLI 명령은 끝났지만 설치 목록에서 ${EXTENSION_ID}@${EXTENSION_VERSION}을 확인하지 못했습니다." >&2
   exit 1
 }
 

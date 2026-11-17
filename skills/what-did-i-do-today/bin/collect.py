@@ -53,9 +53,11 @@ def parse_ts(value):
     if not value:
         return None
     try:
-        return datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+        ts = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
     except ValueError:
         return None
+    # 시간대 없는 값은 비교할 수 없다(naive vs aware 는 TypeError). 깨진 줄처럼 건너뛴다.
+    return ts if ts.tzinfo else None
 
 
 def text_of(content):
@@ -105,16 +107,29 @@ def classify(entry, body):
     return "unknown", "판별 정보 없음"
 
 
-def collect_claude(cutoff):
-    sessions = {}
-    for path in glob.glob(os.path.join(CLAUDE_PROJECTS, "*", "*.jsonl")):
-        # 파일 전체가 기간 밖이면 읽지 않는다 (전사는 100MB 단위로 커진다)
+def recent_files(pattern, cutoff, recursive=False):
+    """마지막 수정이 cutoff 이후인 파일만 준다. 파일 전체가 기간 밖이면 읽지 않는다
+    (전사는 100MB 단위로 커진다)."""
+    for path in glob.glob(pattern, recursive=recursive):
         try:
             if datetime.fromtimestamp(os.path.getmtime(path), timezone.utc) < cutoff:
                 continue
         except OSError:
             continue
+        yield path
 
+
+def one_line(text, max_chars=0):
+    """여러 줄 입력을 한 줄로 접고, max_chars 가 있으면 자른다."""
+    text = " ".join(text.split())
+    if max_chars and len(text) > max_chars:
+        text = text[:max_chars] + "…"
+    return text
+
+
+def collect_claude(cutoff):
+    sessions = {}
+    for path in recent_files(os.path.join(CLAUDE_PROJECTS, "*", "*.jsonl"), cutoff):
         with open(path, encoding="utf-8", errors="replace") as fh:
             for line in fh:
                 line = line.strip()
@@ -124,12 +139,13 @@ def collect_claude(cutoff):
                     entry = json.loads(line)
                 except ValueError:
                     continue
-                if entry.get("type") != "user":
+                if not isinstance(entry, dict) or entry.get("type") != "user":
                     continue
                 ts = parse_ts(entry.get("timestamp"))
                 if ts is None or ts < cutoff:
                     continue
-                body = text_of(entry.get("message", {}).get("content"))
+                message = entry.get("message")
+                body = text_of(message.get("content")) if isinstance(message, dict) else None
                 if body is None or not body.strip():
                     continue
 
@@ -160,12 +176,7 @@ def collect_claude(cutoff):
 def collect_codex(cutoff):
     """Codex 는 참고용이다. 사람 입력을 표시하는 필드가 없어 확정할 수 없다."""
     rows = []
-    for path in glob.glob(os.path.join(CODEX_SESSIONS, "**", "*.jsonl"), recursive=True):
-        try:
-            if datetime.fromtimestamp(os.path.getmtime(path), timezone.utc) < cutoff:
-                continue
-        except OSError:
-            continue
+    for path in recent_files(os.path.join(CODEX_SESSIONS, "**", "*.jsonl"), cutoff, recursive=True):
         with open(path, encoding="utf-8", errors="replace") as fh:
             for line in fh:
                 try:
@@ -267,21 +278,14 @@ def main():
                 head += f" · {sess['git_branch']}"
             print(head)
             for item in sess["human"]:
-                text = " ".join(item["text"].split())
-                if args.max_chars and len(text) > args.max_chars:
-                    text = text[:args.max_chars] + "…"
-                print(f"      {item['at'].astimezone():%H:%M}  {text}")
+                print(f"      {item['at'].astimezone():%H:%M}  {one_line(item['text'], args.max_chars)}")
             for item in sess["unknown"]:
-                text = " ".join(item["text"].split())
-                if args.max_chars and len(text) > args.max_chars:
-                    text = text[:args.max_chars] + "…"
-                print(f"      {item['at'].astimezone():%H:%M}  [판별불가] {text}")
+                print(f"      {item['at'].astimezone():%H:%M}  [판별불가] {one_line(item['text'], args.max_chars)}")
 
     if args.codex:
         print(f"\n━━ Codex 세션 ({len(codex_rows)}건) — 사람 입력 표시가 없어 확정 불가")
         for row in codex_rows:
-            text = " ".join(row["text"].split())
-            print(f"      {row['at'].astimezone():%m/%d %H:%M}  {text[:120]}")
+            print(f"      {row['at'].astimezone():%m/%d %H:%M}  {one_line(row['text'])[:120]}")
 
     return 0
 

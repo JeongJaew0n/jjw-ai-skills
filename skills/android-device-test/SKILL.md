@@ -28,7 +28,7 @@ adb 로 붙은 실기기에서 앱을 검증하는 방법이야. 여기 있는 �
 D=~/.claude/skills/android-device-test/bin/android-device.py
 $D devices                              # 연결된 기기 (시리얼·USB/무선·모델·Android 버전)
 $D state [--package <pkg>]              # 최상단 앱·포커스 창·회전·잠금·화면·배터리·음량·글자 크기·다크 모드
-$D guard <pkg>                          # 그 앱이 최상단·포커스이고 잠금이 아니면 0, 아니면 5
+$D guard <pkg>                          # 그 앱이 최상단·포커스이고 잠금이 아니면 0, 아니면 5 (잠금·화면 상태를 못 읽어도 5)
 
 $D shot [out.png]                       # 스크린샷 (생략하면 $TMPDIR/android-device/)
 $D px <png> 이름=x,y ...                # 지점 색

@@ -94,6 +94,16 @@ def axis_index(value, buckets):
     return len(buckets)
 
 
+def span_end(start, length, buckets):
+    """[start, start+length) 가 덮는 마지막 칸 인덱스. 다음 칸의 시작점이 끝보다 앞이면 그 칸도 덮는다."""
+    end = start + length
+    last = axis_index(start, buckets)
+    for i, b in enumerate(buckets):
+        if b > start + AXIS_TOLERANCE and b < end - AXIS_TOLERANCE:
+            last = max(last, i)
+    return last
+
+
 ORDINALS = ["첫", "두", "세", "네", "다섯", "여섯", "일곱", "여덟"]
 
 
@@ -143,7 +153,17 @@ def collect(workspace_id):
         frame = frames.get(s.get("pane_ref")) or {}
         col = axis_index(frame.get("x", 0), xs)
         row = axis_index(frame.get("y", 0), ys)
-        label, detail = describe_position(row, col, nrows, ncols)
+        # 높이·너비도 본다. L 자 배치(왼쪽 전체 높이 + 오른쪽 상하 분할)의 왼쪽 pane 은 '좌상' 이 아니라 '좌측' 이다.
+        full_height = nrows > 1 and row == 0 and span_end(frame.get("y", 0), frame.get("height", 0), ys) == nrows - 1
+        full_width = ncols > 1 and col == 0 and span_end(frame.get("x", 0), frame.get("width", 0), xs) == ncols - 1
+        if full_height and not full_width:
+            label, detail = describe_position(0, col, 1, ncols)
+            detail += " — 세로 전체"
+        elif full_width and not full_height:
+            label, detail = describe_position(row, 0, nrows, 1)
+            detail += " — 가로 전체"
+        else:
+            label, detail = describe_position(row, col, nrows, ncols)
         binding = s.get("resume_binding") or {}
         rows.append({
             "surface_ref": s.get("ref"),

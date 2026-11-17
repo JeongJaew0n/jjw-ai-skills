@@ -22,7 +22,10 @@ run() {   # run <이름> <명령...>
   out="$("$@" 2>&1)"; rc=$?
   if [ $rc -eq 0 ]; then
     pass=$((pass + 1))
-    printf 'ok    %s  — %s\n' "$name" "$(printf '%s\n' "$out" | grep -v '^[[:space:]]*$' | tail -1)"
+    local ran last
+    ran="$(printf '%s\n' "$out" | grep -E '^Ran [0-9]+ tests?' | tail -1 | sed 's/ in .*//')"   # unittest 의 시험 수
+    last="$(printf '%s\n' "$out" | grep -v '^[[:space:]]*$' | tail -1)"
+    printf 'ok    %s  — %s\n' "$name" "${ran:+$ran · }$last"
   else
     fail=$((fail + 1))
     failed+=("$name")

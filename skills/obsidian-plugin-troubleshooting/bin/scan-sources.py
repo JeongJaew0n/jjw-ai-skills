@@ -40,10 +40,11 @@ def is_obsidian_plugin(d):
     if not os.path.isfile(m):
         return False
     try:
-        j = json.load(open(m, encoding="utf-8"))
+        with open(m, encoding="utf-8") as fh:
+            j = json.load(fh)
     except Exception:
         return False
-    return "minAppVersion" in j and "manifest_version" not in j
+    return isinstance(j, dict) and "minAppVersion" in j and "manifest_version" not in j
 
 
 def title(p):

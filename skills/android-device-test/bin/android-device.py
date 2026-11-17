@@ -17,7 +17,7 @@ Preferences DataStore 를 직접 디코드한다 — 처음 보는 맥·세션�
   ui [--find RE] [--switch-near LABEL]   uiautomator 덤프에서 좌표 찾기
   datastore <package> [keys...]   Preferences DataStore 읽기 (debuggable 빌드)
   snapshot <out.json> [--package P]      되돌릴 설정 기록
-  diff <snapshot.json>            지금과 스냅샷의 차이 (있으면 종료 코드 1)
+  diff <snapshot.json>            지금과 스냅샷의 차이 (있으면 종료 코드 6)
 
 쓰기 — 사용자가 기기 테스트를 직접 시켰을 때만:
   restore <snapshot.json> --yes   스냅샷과 다른 값만 되돌린다 (--yes 없으면 계획만 출력)
@@ -30,6 +30,7 @@ Preferences DataStore 를 직접 디코드한다 — 처음 보는 맥·세션�
 
 import argparse
 import datetime
+import html
 import json
 import os
 import re
@@ -240,18 +241,18 @@ def night_mode(dev):
 
 
 def app_locales(dev, package):
-    out = dev.sh(f"cmd locale get-app-locales {package} --user current")
-    v = first(r"are \[(.*)\]", out)
-    return v if v is not None else None
+    return first(r"are \[(.*)\]", dev.sh(f"cmd locale get-app-locales {package} --user current"))
 
 
 def package_windows(dev, package):
     """그 패키지가 가진 창을 종류(ty=)별로 센다. 해제한 뒤 0 이어야 누수가 없다."""
     out = dev.sh("dumpsys window windows")
+    # 패키지 이름은 낱말 경계로 비교한다. 부분 문자열로 보면 com.example.app 이 com.example.app.helper 의 창까지 센다.
+    exact = re.compile(rf"(?<![\w.]){re.escape(package)}(?![\w.])")
     counts = {}
     for block in re.split(r"\n(?=  Window #)", out):
         head = block.split("\n", 1)[0]
-        if package not in head and f"package={package}" not in block:
+        if not exact.search(head) and not re.search(rf"\bpackage={re.escape(package)}(?![\w.])", block):
             continue
         ty = first(r"\bty=(\w+)", block) or "?"
         counts[ty] = counts.get(ty, 0) + 1
@@ -333,9 +334,14 @@ def guard_check(dev, package):
         problems.append(f"최상단이 {package} 가 아님 (지금 {top})")
     if focus and focus.split("/")[0] != package:
         problems.append(f"포커스 창이 {package} 가 아님 (지금 {focus} — 알림창·키보드·대화상자일 수 있음)")
-    if kg:
+    # 읽지 못한 상태는 '아님' 이 아니다. 잠금·화면 상태를 확인하지 못하면 입력을 보내지 않는다(fail-closed).
+    if kg is None:
+        problems.append("잠금 화면 여부를 읽지 못함 (dumpsys 형식이 다른 기기일 수 있음)")
+    elif kg:
         problems.append("잠금 화면이 떠 있음")
-    if wake and wake != "Awake":
+    if wake is None:
+        problems.append("화면 켜짐 여부를 읽지 못함 (dumpsys power 에 mWakefulness 없음)")
+    elif wake != "Awake":
         problems.append(f"화면이 꺼져 있음 ({wake})")
     return problems
 
@@ -403,6 +409,13 @@ def png_load(path, max_rows=None):
         rows.append(line)
         prev = line
     return w, h, ch, rows
+
+
+def png_size(path):
+    """IHDR 의 (너비, 높이). 영역을 검사하려고 전체를 풀기 전에 읽는다."""
+    with open(path, "rb") as f:
+        head = f.read(24)
+    return struct.unpack(">II", head[16:24])
 
 
 def rgb_at(row, x, ch):
@@ -497,9 +510,7 @@ def cmd_px(args):
 
 
 def cmd_stats(args):
-    with open(args.png, "rb") as f:
-        head = f.read(24)
-    w, h = struct.unpack(">II", head[16:24])
+    w, h = png_size(args.png)
     x1, y1, x2, y2 = parse_rect(args.rect, w, h) if args.rect else (0, 0, w, h)
     _, _, ch, rows = png_load(args.png, max_rows=y2)
     mx, bright, sx, sy, total = 0, 0, 0, 0, 0
@@ -528,9 +539,7 @@ def cmd_stats(args):
 
 def cmd_crop(args):
     args.out = out_path(args.out, ".png", args.in_repo)
-    with open(args.png, "rb") as f:
-        head = f.read(24)
-    w, h = struct.unpack(">II", head[16:24])
+    w, h = png_size(args.png)
     x1, y1, x2, y2 = parse_rect(args.rect, w, h)
     _, _, ch, rows = png_load(args.png, max_rows=y2)
     k = max(1, args.scale)
@@ -559,7 +568,8 @@ def ui_dump(dev):
 def ui_nodes(xml):
     nodes = []
     for raw in re.findall(r"<node [^>]*>", xml):
-        attrs = dict(re.findall(r'(\S+?)="([^"]*)"', raw))
+        # 속성값은 XML 이스케이프돼 있다(&amp; 등). 풀어야 "Sound & vibration" 으로 찾을 수 있다.
+        attrs = {k: html.unescape(v) for k, v in re.findall(r'(\S+?)="([^"]*)"', raw)}
         b = re.match(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]", attrs.get("bounds", ""))
         if not b:
             continue

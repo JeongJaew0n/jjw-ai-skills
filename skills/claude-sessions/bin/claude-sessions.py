@@ -122,7 +122,9 @@ def collect(include_stale):
             pid = int(d.get("pid") or f.stem)
         except Exception:
             continue
-        is_alive = pid in live_claude or alive(pid)
+        # ps 에 보이는데 claude 가 아니면 죽은 세션의 pid 를 다른 프로그램이 재사용한 것이다.
+        # ps 에 아예 없을 때만(ps 실패 등) kill(0) 로 살아 있는지 본다.
+        is_alive = pid in live_claude or (pid not in table and alive(pid))
         seen.add(pid)
         if not is_alive and not include_stale:
             continue

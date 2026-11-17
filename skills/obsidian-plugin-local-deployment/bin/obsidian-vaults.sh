@@ -56,7 +56,7 @@ except (OSError, ValueError) as e:
     print(f"{path} 를 읽지 못했습니다: {e}", file=sys.stderr)
     sys.exit(1)
 
-vaults = data.get("vaults")
+vaults = data.get("vaults") if isinstance(data, dict) else None
 if not isinstance(vaults, dict):
     print(f"{path} 에 vaults 항목이 없습니다.", file=sys.stderr)
     sys.exit(1)

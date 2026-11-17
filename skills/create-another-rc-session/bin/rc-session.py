@@ -86,8 +86,12 @@ def audit_dir(target):
         return "MISSING", [], []
 
     entries = sorted(os.listdir(target))
-    found_config = [e for e in entries if e in EXECUTABLE_CONFIG]
-    others = [e for e in entries if e not in INERT_ENTRIES and e not in EXECUTABLE_CONFIG]
+    # 대소문자를 무시하고 본다. macOS 기본 디스크는 대소문자를 가리지 않아 `claude.md`·`.Claude/` 도
+    # Claude Code 가 CLAUDE.md·.claude/ 로 읽는다. 가리는 디스크에서도 막는 쪽이 안전하다.
+    config_names = {c.lower() for c in EXECUTABLE_CONFIG}
+    inert_names = {e.lower() for e in INERT_ENTRIES}
+    found_config = [e for e in entries if e.lower() in config_names]
+    others = [e for e in entries if e.lower() not in inert_names and e.lower() not in config_names]
 
     if found_config:
         return "HAS_CONFIG", found_config, others
@@ -188,7 +192,7 @@ def cmd_trust(args):
     return 0
 
 
-def build_start_cmd(target, name, extra):
+def build_start_cmd(name, extra):
     cmd = [CLAUDE_BIN, "remote-control", "--create-session-in-dir", "--spawn", "same-dir"]
     if name:
         cmd += ["--name", name]
@@ -199,11 +203,9 @@ def build_start_cmd(target, name, extra):
 def cmd_start(args):
     target = os.path.abspath(os.path.expanduser(args.dir))
 
-    if args.create and not os.path.isdir(target):
-        os.makedirs(target, exist_ok=True)
-        print(f"생성       : {target}")
-
-    if not os.path.isdir(target):
+    # 폴더는 모든 검사를 통과한 뒤에 만든다. 거부되는 명령이 빈 폴더를 남기거나 --dry-run 이 폴더를 만들지 않게.
+    missing = not os.path.isdir(target)
+    if missing and not args.create:
         die(f"디렉터리가 없습니다: {target}\n--create 를 붙이거나 직접 만드세요.")
 
     if not os.path.exists(CLAUDE_BIN):
@@ -216,9 +218,16 @@ def cmd_start(args):
             "  Error: Workspace not trusted. Please run `claude` in <경로> first ...\n"
             "먼저 audit 으로 내용을 확인하고, 사용자 확인을 받아 trust 를 실행하세요.")
 
+    if missing:
+        if args.dry_run:
+            print(f"생성 예정  : {target}")
+        else:
+            os.makedirs(target, exist_ok=True)
+            print(f"생성       : {target}")
+
     log = os.path.abspath(os.path.expanduser(args.log)) if args.log else os.path.join(
         target, ".rc-session.log")
-    cmd = build_start_cmd(target, args.name, args.extra or [])
+    cmd = build_start_cmd(args.name, args.extra or [])
 
     print(f"대상       : {target}")
     print(f"바이너리   : {CLAUDE_BIN} -> {os.path.realpath(CLAUDE_BIN)}")

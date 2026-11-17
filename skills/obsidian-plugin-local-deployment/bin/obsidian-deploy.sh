@@ -26,9 +26,14 @@ die() { echo "오류: $*" >&2; exit 1; }
 
 while [ $# -gt 0 ]; do
   case "$1" in
-    --src)         SRC="${2:-}";         shift 2 ;;
-    --plugins-dir) PLUGINS_DIR="${2:-}"; shift 2 ;;
-    --id)          PLUGIN_ID="${2:-}";   shift 2 ;;
+    --src|--plugins-dir|--id)
+      [ $# -ge 2 ] || die "$1 값이 필요합니다."
+      case "$1" in
+        --src)         SRC="$2" ;;
+        --plugins-dir) PLUGINS_DIR="$2" ;;
+        --id)          PLUGIN_ID="$2" ;;
+      esac
+      shift 2 ;;
     --hotreload)   HOTRELOAD=1;          shift ;;
     --dry-run)     DRY_RUN=1;            shift ;;
     *) die "알 수 없는 인자: $1" ;;
