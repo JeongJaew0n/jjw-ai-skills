@@ -177,6 +177,15 @@ def git(root, *args, check=False):
     return proc
 
 
+def is_repo_root(root):
+    """root 가 git 저장소의 최상위인가. .git 이 파일인 worktree·서브모듈도 저장소로 본다.
+    상위 저장소 안의 하위 폴더는 최상위가 아니니 False (그 폴더에 local 설정을 하면 상위 저장소가 바뀐다)."""
+    proc = git(root, "rev-parse", "--show-toplevel")
+    if proc.returncode != 0:
+        return False
+    return os.path.realpath(proc.stdout.strip()) == os.path.realpath(root)
+
+
 def cmd_detect(args):
     """쓸 수 있는 git 신원 후보를 모은다. 사용자에게 실제 선택지를 보여주기 위한 것."""
     print("=== git global ===")
@@ -201,7 +210,7 @@ def cmd_detect(args):
             print("  (미로그인)")
 
     root = os.path.abspath(os.path.expanduser(args.root))
-    if os.path.isdir(os.path.join(root, ".git")):
+    if is_repo_root(root):
         print("=== 이 저장소의 local 설정 ===")
         ln = git(root, "config", "--local", "user.name").stdout.strip()
         le = git(root, "config", "--local", "user.email").stdout.strip()
@@ -214,13 +223,21 @@ def cmd_apply(args):
     if not os.path.isdir(root):
         die(f"디렉터리가 없습니다: {root}")
 
+    # 인자 검사는 무엇이든 쓰기 전에 한다. 실패로 끝나면서 파일만 남기지 않게.
+    has_git = is_repo_root(root)
+    if args.author_name or args.author_email:
+        if not (args.author_name and args.author_email):
+            die("--author-name 과 --author-email 은 함께 줘야 합니다.")
+        if not has_git and not args.git_init:
+            die("git 저장소가 아니라 신원을 설정할 수 없습니다. --git-init 을 붙이세요.")
+
     created, skipped = [], []
 
     # 1) docs 골격. 각 폴더에 목적을 적은 README 를 둔다 — 빈 폴더는 git 이 추적하지
     #    않을뿐더러, 용도를 쓰는 자리에서 설명해야 실제로 지켜진다.
     for rel, body in DOC_TREE.items():
         path = os.path.join(root, rel)
-        if os.path.exists(path):
+        if os.path.lexists(path):   # 끊어진 심볼릭 링크도 '있음' — 링크를 따라 프로젝트 밖에 쓰지 않게
             skipped.append(rel)
             continue
         if not args.dry_run:
@@ -230,7 +247,6 @@ def cmd_apply(args):
         created.append(rel)
 
     # 2) git 초기화 (요청한 경우에만). 이미 저장소면 건드리지 않는다.
-    has_git = os.path.isdir(os.path.join(root, ".git"))
     if args.git_init and not has_git:
         if not args.dry_run:
             git(root, "init", check=True)
@@ -240,11 +256,7 @@ def cmd_apply(args):
     # 3) git 신원. 산문으로 적어두는 것만으로는 커밋 author 가 바뀌지 않는다.
     #    --local 로 실제 설정해야 강제된다.
     identity = None
-    if args.author_name or args.author_email:
-        if not (args.author_name and args.author_email):
-            die("--author-name 과 --author-email 은 함께 줘야 합니다.")
-        if not has_git:
-            die("git 저장소가 아니라 신원을 설정할 수 없습니다. --git-init 을 붙이세요.")
+    if args.author_name and args.author_email:
         if not args.dry_run:
             git(root, "config", "--local", "user.name", args.author_name, check=True)
             git(root, "config", "--local", "user.email", args.author_email, check=True)

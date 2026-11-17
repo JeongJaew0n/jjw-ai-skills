@@ -72,9 +72,21 @@ def fail(msg, code=1):
     sys.exit(code)
 
 
+def read_text(path, default=None):
+    """파일 내용. default 를 주면 파일이 없을 때 그 값을 돌려준다."""
+    if default is not None and not os.path.exists(path):
+        return default
+    with open(path, encoding='utf-8') as f:
+        return f.read()
+
+
+def load_settings():
+    return json.loads(read_text(SETTINGS)) if os.path.exists(SETTINGS) else {}
+
+
 # ---------------------------------------------------------------- records
 def parse_record(path):
-    text = open(path, encoding='utf-8').read()
+    text = read_text(path)
     m = re.match(r'^---\n(.*?)\n---\n', text, re.S)
     meta = {}
     if m:
@@ -120,12 +132,22 @@ def render_block():
     return '\n'.join(lines) + '\n'
 
 
+def find_block(text):
+    """블록의 (시작, 끝) 위치. 표시는 줄 전체로만 인정하고 END 는 BEGIN 뒤에서 찾는다.
+    사용자 글이 표시를 본문에 언급만 한 경우를 블록으로 착각해 그 사이를 지우지 않게."""
+    m = re.search(rf'^{re.escape(BEGIN)}[ \t]*$', text, re.M)
+    if not m:
+        return None
+    e = re.compile(rf'^{re.escape(END)}[ \t]*(\n|$)', re.M).search(text, m.end())
+    if not e:
+        return None
+    return m.start(), e.end()
+
+
 def apply_block(text, block):
-    if BEGIN in text and END in text:
-        a = text.index(BEGIN)
-        b = text.index(END) + len(END)
-        if b < len(text) and text[b] == '\n':
-            b += 1
+    span = find_block(text)
+    if span:
+        a, b = span
         return text[:a] + block + text[b:]
     if text and not text.endswith('\n'):
         text += '\n'
@@ -142,6 +164,16 @@ def backup(path):
     return dst
 
 
+def valid_date(s):
+    if not re.fullmatch(r'\d{4}-\d{2}-\d{2}', s):
+        return False
+    try:
+        datetime.date.fromisoformat(s)
+        return True
+    except ValueError:
+        return False
+
+
 # ---------------------------------------------------------------- commands
 def cmd_new(a):
     if not SLUG.match(a.slug):
@@ -152,6 +184,8 @@ def cmd_new(a):
         if '\n' in field:
             fail('title·rule 은 한 줄로 써', 2)
     date = a.date or datetime.date.today().isoformat()
+    if not valid_date(date):   # 파일 이름에 들어가니 '../x' 같은 값으로 기록 폴더 밖에 쓰지 않게
+        fail(f'--date 는 YYYY-MM-DD 형식이어야 해: {date}', 2)
     os.makedirs(DIR, exist_ok=True)
     path = os.path.join(DIR, f'{date}-{a.slug}.md')
     if os.path.exists(path):
@@ -174,7 +208,7 @@ def cmd_list(a):
 def cmd_sync(a):
     block = render_block()
     for label, path in TARGETS:
-        old = open(path, encoding='utf-8').read() if os.path.exists(path) else ''
+        old = read_text(path, '')
         new = apply_block(old, block)
         if new == old:
             print(f'{label:7} 변경 없음  {path}')
@@ -202,7 +236,7 @@ def hook_installed(settings):
 
 
 def cmd_install_hook(a):
-    settings = json.load(open(SETTINGS, encoding='utf-8')) if os.path.exists(SETTINGS) else {}
+    settings = load_settings()
     if hook_installed(settings):
         print(f'이미 등록돼 있어: {SETTINGS}')
         return
@@ -221,7 +255,7 @@ def cmd_install_hook(a):
     with open(tmp, 'w', encoding='utf-8') as f:
         json.dump(settings, f, ensure_ascii=False, indent=2)
         f.write('\n')
-    json.load(open(tmp, encoding='utf-8'))   # 다시 읽어 확인
+    json.loads(read_text(tmp))   # 다시 읽어 확인
     os.replace(tmp, SETTINGS)
     print(f'등록함: {SETTINGS}' + (f'  (백업 {saved})' if saved else ''))
 
@@ -236,11 +270,11 @@ def cmd_check(a):
             problems.append(f"없는 guard id: {r['guard']} ({r['file']})")
     block = render_block()
     for label, path in TARGETS:
-        text = open(path, encoding='utf-8').read() if os.path.exists(path) else ''
+        text = read_text(path, '')
         if apply_block(text, block) != text:
             problems.append(f'{label} 전역 지침의 블록이 기록과 다름 → sync: {path}')
     if any(r.get('guard') for r in records()):
-        settings = json.load(open(SETTINGS, encoding='utf-8')) if os.path.exists(SETTINGS) else {}
+        settings = load_settings()
         if not hook_installed(settings):
             problems.append(f'guard 가 있는 기록이 있는데 훅이 등록 안 됨 → install-hook: {SETTINGS}')
     for p in problems:

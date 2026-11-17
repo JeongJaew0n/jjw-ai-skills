@@ -34,7 +34,8 @@ done
 # SKILL.md 가 없을 수도 있다.
 field() {
   [ -f "$1" ] || return 0
-  sed -n "s/^$2: *//p" "$1" | head -1 | tr -d '"'
+  # 값 뒤 주석(  # …)·따옴표·CR(CRLF 파일)·앞뒤 공백을 걷어 낸다. 남기면 "true  # 메모" 가 true 로 안 읽힌다.
+  sed -n "s/^$2: *//p" "$1" | head -1 | tr -d '"\r' | sed 's/[[:space:]]#.*$//; s/[[:space:]]*$//'
 }
 
 echo "저장소: $ROOT"
@@ -51,8 +52,9 @@ for skill_dir in "$SRC"/*/; do
   # Claude 는 frontmatter 를 직접 읽으므로 이 파일과 무관하다.
   if [ -f "$skill_md" ]; then
     dmi="$(field "$skill_md" "disable-model-invocation")"
-    implicit="true"
-    [ "$dmi" = "true" ] && implicit="false"
+    # 정확히 false 일 때만 연다. 키가 없거나 알아볼 수 없는 값이면 닫힌 쪽(수동)으로 둔다.
+    implicit="false"
+    [ "$dmi" = "false" ] && implicit="true"
     yaml="$skill_dir/agents/openai.yaml"
     if [ "$DRY" -eq 0 ]; then
       mkdir -p "$skill_dir/agents"

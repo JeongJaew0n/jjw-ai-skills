@@ -87,6 +87,8 @@
 
 모든 스킬에 다음 두 키를 넣는다. **키는 생략하지 않는다** — 자동 스킬도 값을 `false` 로 적어 의도를 드러낸다.
 
+`bin/install.sh` 는 값이 정확히 `false` 일 때만 Codex 쪽 자동 호출(`allow_implicit_invocation: true`)을 연다. 키를 빼먹거나 값을 못 알아보면 수동으로 둔다.
+
 ```yaml
 user-invocable: true
 disable-model-invocation: true    # 자동 스킬만 false

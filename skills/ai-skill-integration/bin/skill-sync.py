@@ -42,12 +42,14 @@ def digest(d):
     """내용 해시. 파일 경로와 바이트를 함께 넣어 배치까지 반영한다."""
     h = hashlib.sha256()
     for rel, p in files_of(d):
-        h.update(rel.encode())
         try:
             with open(p, "rb") as fh:
-                h.update(fh.read())
+                data = fh.read()
         except OSError:
-            h.update(b"<unreadable>")
+            data = b"<unreadable>"
+        # 경로와 내용의 길이를 함께 넣는다. 구분 없이 이으면 'a'+'bX' 와 'ab'+'X' 가 같은 해시가 된다.
+        name = rel.encode()
+        h.update(len(name).to_bytes(8, "big") + name + len(data).to_bytes(8, "big") + data)
     return h.hexdigest()
 
 
@@ -88,9 +90,19 @@ def description(d):
     if not os.path.isfile(p):
         return ""
     try:
-        for line in open(p, encoding="utf-8", errors="replace"):
+        with open(p, encoding="utf-8", errors="replace") as fh:
+            lines = fh.read().splitlines()
+        for i, line in enumerate(lines):
             if line.startswith("description:"):
-                return line.split(":", 1)[1].strip()
+                value = line.split(":", 1)[1].strip()
+                if value[:1] in ("|", ">"):   # 블록 스칼라: 이어지는 들여쓴 줄이 본문
+                    body = []
+                    for nxt in lines[i + 1:]:
+                        if nxt.strip() and not nxt[:1].isspace():
+                            break
+                        body.append(nxt.strip())
+                    value = " ".join(b for b in body if b)
+                return value
     except OSError:
         pass
     return ""
@@ -168,8 +180,7 @@ def cmd_analyze(args):
         print(json.dumps(rows, ensure_ascii=False, indent=2))
         return 0
 
-    act = [r for r in rows if not r["excluded"] and r["state"] != "동일(같은 원본 공유)"
-           and not str(r["state"]).startswith("동일")]
+    act = [r for r in rows if not r["excluded"] and not str(r["state"]).startswith("동일")]
     same = [r for r in rows if not r["excluded"] and str(r["state"]).startswith("동일")]
     excl = [r for r in rows if r["excluded"]]
 
@@ -230,6 +241,11 @@ def cmd_apply(args):
     if not rows:
         print("적용할 대상이 없습니다.")
         return 0
+
+    if not os.path.isdir(dst_root):
+        # 대상 쪽 스킬 폴더가 없으면 그 도구를 안 쓰는 머신이다. 새로 만들지 않는다(SKILL.md 동작 원칙).
+        print(f"대상 폴더가 없어서 멈춥니다: {dst_root}", file=sys.stderr)
+        return 2
 
     stamp = time.strftime("%Y%m%d-%H%M%S")
     backup = os.path.join(BACKUP_ROOT, f"skill-sync-{stamp}")
