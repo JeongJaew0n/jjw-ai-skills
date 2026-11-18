@@ -193,7 +193,6 @@ class CollectClaudeTest(unittest.TestCase):
         self.assertIn('old', sessions)                # 기간을 넓히면 오래된 파일도 읽는다
         self.assertIn('기간 밖', [i['text'] for i in sessions['sess-aaaa1111']['human']])
 
-    @unittest.expectedFailure
     def test_compaction_summary_is_not_unknown(self):
         # BUG: 대화 압축 요약(isCompactSummary: true)은 origin·promptSource 가 없어 [판별불가] 로 떨어진다.
         # 프로그램이 넣은 것이므로 machine 이어야 한다. 실제 전사에서 확인(2026-11-18).
@@ -201,7 +200,6 @@ class CollectClaudeTest(unittest.TestCase):
                      isCompactSummary=True)
         self.assertEqual(C.classify(entry, entry['message']['content'])[0], 'machine')
 
-    @unittest.expectedFailure
     def test_teammate_message_is_not_unknown(self):
         # BUG: 팀원 에이전트가 보낸 메시지는 판별 필드 없이 본문에 <teammate-message 표식만 있어
         # [판별불가] 로 떨어진다. INJECTED_MARKERS 에 "<teammate-message" 가 없다.
@@ -242,7 +240,6 @@ class CollectCodexTest(unittest.TestCase):
         rows = C.collect_codex(self.cutoff)
         self.assertEqual([(r['text'], r['file']) for r in rows], [('codex 요청', 'rollout-a.jsonl')])
 
-    @unittest.expectedFailure
     def test_current_rollout_format(self):
         # BUG: 지금 Codex 전사(2026-11 확인)에는 event_msg/user_message 가 없다. 사용자 입력은
         # event_msg/item_completed 의 item.type == "UserMessage" (content: [{type: text, text}]) 와

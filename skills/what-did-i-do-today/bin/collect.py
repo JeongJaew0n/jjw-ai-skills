@@ -44,6 +44,7 @@ INJECTED_MARKERS = (
     "<command-message>",
     "<local-command-stdout>",
     "<cross-session-message",
+    "<teammate-message",
     "Caveat: The messages below were generated",
     "[Request interrupted by user",
 )
@@ -82,6 +83,8 @@ def classify(entry, body):
         return "machine", "서브에이전트"
     if entry.get("isMeta"):
         return "machine", "주입된 내용"
+    if entry.get("isCompactSummary"):
+        return "machine", "대화 압축 요약"
 
     origin = entry.get("origin")
     kind = origin.get("kind") if isinstance(origin, dict) else None
@@ -173,6 +176,25 @@ def collect_claude(cutoff):
     return sessions
 
 
+def codex_user_text(entry):
+    """Codex 전사 한 줄에서 사용자 입력 글을 꺼낸다. 아니면 None.
+
+    지금 형식(2026-11 확인): event_msg / item_completed 의 item.type == "UserMessage", content 는 [{type: text, text}].
+    옛 형식: event_msg / user_message 의 message. response_item(role user)은 지침·환경 주입까지 섞여 있어 쓰지 않는다.
+    """
+    if not isinstance(entry, dict) or entry.get("type") != "event_msg":
+        return None
+    payload = entry.get("payload")
+    if not isinstance(payload, dict):
+        return None
+    if payload.get("type") == "user_message":
+        return str(payload.get("message") or "").strip() or None
+    item = payload.get("item")
+    if payload.get("type") == "item_completed" and isinstance(item, dict) and item.get("type") == "UserMessage":
+        return (text_of(item.get("content")) or "").strip() or None
+    return None
+
+
 def collect_codex(cutoff):
     """Codex 는 참고용이다. 사람 입력을 표시하는 필드가 없어 확정할 수 없다."""
     rows = []
@@ -183,14 +205,11 @@ def collect_codex(cutoff):
                     entry = json.loads(line)
                 except ValueError:
                     continue
-                payload = entry.get("payload") or {}
-                if entry.get("type") != "event_msg" or payload.get("type") != "user_message":
+                msg = codex_user_text(entry)
+                if not msg:
                     continue
                 ts = parse_ts(entry.get("timestamp"))
                 if ts is None or ts < cutoff:
-                    continue
-                msg = str(payload.get("message") or "").strip()
-                if not msg:
                     continue
                 rows.append({"at": ts, "text": msg, "file": os.path.basename(path)})
     return rows
