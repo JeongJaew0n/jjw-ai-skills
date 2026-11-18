@@ -1,7 +1,7 @@
 # bin/install.sh 가 SKILL.md frontmatter 에서 생성한다. 직접 고치지 말 것.
 interface:
-  display_name: "ai-interview-tech"
-  default_prompt: "Use $ai-interview-tech."
+  display_name: "jjw-ai-interview-decision"
+  default_prompt: "Use $jjw-ai-interview-decision."
 
 policy:
   allow_implicit_invocation: false

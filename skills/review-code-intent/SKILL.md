@@ -272,10 +272,12 @@ Tech Review에서 제일 흔한 실패는 **추론을 사실처럼 쓰는 것**�
 ### 인터뷰 산출물이 있으면 먼저 찾아
 
 ```bash
-ls docs/plans/*/spec.md docs/decisions/*.md 2>/dev/null
+ls docs/plans/*/결정-질문.md docs/plans/*/spec.md docs/decisions/*.md 2>/dev/null
 ```
 
-`ai-interview-tech` 가 구현 전에 사람과 확정한 결정 스펙이 있으면 **그걸 의도 항목의 1차 출처로 써.** 출처 등급은 `명시` 야. 코드에서 역산하지 마.
+`jjw-ai-interview-decision` 이 구현 전에 사람과 확정한 결정이 있으면 **그걸 의도 항목의 1차 출처로 써.** `결정-질문.md` 의 `**결정:**` 칸이 채워진 질문이 대상이고, 출처 등급은 `명시` 야. 코드 주석 · 커밋에 `Q-C5` 같은 라벨이 있으면 그 질문의 결정 칸과 대조해. 결정 칸이 비어 있는 질문은 출처가 아니야. 코드에서 역산하지 마.
+
+옛 이름 `ai-interview-tech` 가 남긴 `docs/decisions/*.md` 결정 스펙도 같은 등급으로 써.
 
 항목마다 **출처 등급**을 붙여.
 
