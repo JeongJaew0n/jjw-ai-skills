@@ -299,7 +299,6 @@ class Install(Base):
         r = self.run_tool(self.repo, '--dry-run', PATH=f'{self.fakebin}:/usr/bin:/bin')
         self.assertIn('Node.js가 필요합니다', r.stderr)
 
-    @unittest.expectedFailure
     def test_broken_node_options(self):
         # BUG: vsix-install.sh:93,139,159 가 `node -e` 를 NODE_OPTIONS 를 물려받은 채 부른다. NODE_OPTIONS 가 깨져 있으면
         # (예: --require 대상이 tmp 청소로 사라짐 — 이 맥에서 실제로 있는 일) 첫 node 가 MODULE_NOT_FOUND 로 죽고,

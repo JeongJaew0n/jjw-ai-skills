@@ -2,6 +2,10 @@
 
 set -eu
 
+# 아래 node -e 는 JSON 만 읽는다. 물려받은 NODE_OPTIONS 가 깨져 있으면 node 가 죽어서
+# "package.json 이 잘못됐다" 는 엉뚱한 오류가 나므로 지운다.
+unset NODE_OPTIONS
+
 usage() {
   cat <<'EOF'
 Usage: vsix-install.sh [repo-or-vsix] [--cli <command-or-path>] [--dry-run]
