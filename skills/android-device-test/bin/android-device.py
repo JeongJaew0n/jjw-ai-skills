@@ -80,7 +80,7 @@ SETTINGS = [
 ]
 # --package 를 줬을 때 기록하는 appops. 오버레이 앱 테스트에서 가장 자주 바꾼다.
 APPOPS = ["SYSTEM_ALERT_WINDOW"]
-STREAMS = {"music": 3, "ring": 2, "notification": 5}
+STREAMS = {"music": 3, "ring": 2, "notification": 5, "alarm": 4}
 
 
 def die(msg, code=EXIT_ERROR):

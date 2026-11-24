@@ -201,7 +201,7 @@ def default_state():
             "global:zen_mode": "0",
             "global:low_power": "0",
         },
-        "volume": {"3": [8, 15], "2": [5, 15], "5": [5, 15]},
+        "volume": {"3": [8, 15], "2": [5, 15], "5": [5, 15], "4": [7, 15]},
         "night": "yes",
         "appops": {f"{PKG}:SYSTEM_ALERT_WINDOW": "allow"},
         "perms": {PKG: {"android.permission.POST_NOTIFICATIONS": True, "android.permission.CAMERA": False}},
@@ -399,7 +399,7 @@ class StateTest(ToolCase):
         self.assertEqual(s["wakefulness"], "Awake")
         self.assertEqual(s["rotation"], "0")
         self.assertEqual(s["battery"], {"level": 77, "charge_counter_uah": 3456000, "powered": ["USB"]})
-        self.assertEqual(s["volume"], {"music": "8/15", "ring": "5/15", "notification": "5/15"})
+        self.assertEqual(s["volume"], {"music": "8/15", "ring": "5/15", "notification": "5/15", "alarm": "7/15"})
         self.assertEqual(s["font_scale"], "1.0")
         self.assertEqual(s["night_mode"], "yes")
         self.assertEqual(s["package"]["windows"], {"BASE_APPLICATION": 1, "APPLICATION_OVERLAY": 1})
@@ -427,7 +427,7 @@ class StateTest(ToolCase):
         self.assertIsNone(s["top"])
         self.assertIsNone(s["keyguard"])
         self.assertEqual(s["battery"]["level"], -1)
-        self.assertEqual(s["volume"], {"music": None, "ring": None, "notification": None})
+        self.assertEqual(s["volume"], {"music": None, "ring": None, "notification": None, "alarm": None})
 
     # BUG: package_windows 가 창 머리줄·package= 를 부분 문자열로 비교해서, com.example.app 을 물으면
     # com.example.app.helper 의 창까지 센다. 해제 뒤 "창 0개" 로 누수를 판정하는 용도라 틀린 경고가 난다.
@@ -606,7 +606,7 @@ class SnapshotTest(ToolCase):
         self.assertEqual(len(snap["settings"]), len(ad.SETTINGS))
         self.assertEqual(snap["settings"]["system:font_scale"], "1.0")
         self.assertIsNone(snap["settings"]["system:show_touches"])
-        self.assertEqual(snap["volume"], {"music": 8, "ring": 5, "notification": 5})
+        self.assertEqual(snap["volume"], {"music": 8, "ring": 5, "notification": 5, "alarm": 7})
         self.assertEqual(snap["night_mode"], "yes")
         self.assertEqual(snap["app_locales"], {PKG: ""})
         self.assertEqual(snap["appops"], {PKG: {"SYSTEM_ALERT_WINDOW": "allow"}})
